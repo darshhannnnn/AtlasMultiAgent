@@ -88,7 +88,9 @@ class GoogleProvider(BaseLLMProvider):
             _apply_thought_signature_patch()
 
             api_key = self.config.get("api_key") or self.config.get("google_api_key")
-            model_name = self.config.get("model") or "gemini-3.5-flash"
+            model_name = self.config.get("model") or "gemini-flash-lite-latest"
+            if model_name in ["gemini-3.5-flash", "gemini-3.6-flash"]:
+                model_name = "gemini-flash-lite-latest"
             temperature = self.config.get("temperature", 0.7)
             max_tokens = self.config.get("max_tokens")
 

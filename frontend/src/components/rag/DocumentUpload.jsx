@@ -54,9 +54,9 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
 
   const uploadFile = async (file) => {
     const ext = file.name.split('.').pop().toLowerCase();
-    if (!['pdf', 'txt', 'md'].includes(ext)) {
+    if (!['pdf', 'txt', 'md', 'docx', 'csv', 'json'].includes(ext)) {
       setUploadState('error');
-      setErrorMsg('Unsupported file format. Please upload PDF, TXT or MD.');
+      setErrorMsg('Unsupported file format. Please upload PDF, TXT, MD, DOCX, CSV or JSON.');
       return;
     }
 
@@ -72,7 +72,10 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Upload process failed.");
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || "Upload process failed.");
+      }
       
       const data = await response.json();
       setUploadState('success');
@@ -109,7 +112,7 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
         type="file"
         multiple={false}
         onChange={handleChange}
-        accept=".pdf,.txt,.md"
+        accept=".pdf,.txt,.md,.docx,.csv,.json"
         className="hidden"
       />
 
@@ -121,7 +124,7 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
               Drag & drop document files here
             </p>
             <p className="text-xs text-stone-400 mb-4">
-              Supports PDF, TXT or Markdown up to 10MB
+              Supports PDF, TXT, MD, DOCX or CSV up to 10MB
             </p>
             <button
               onClick={onButtonClick}

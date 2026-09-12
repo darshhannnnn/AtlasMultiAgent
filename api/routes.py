@@ -127,6 +127,8 @@ async def chat(request: ChatRequest):
 async def upload_document(file: UploadFile = File(...)):
     try:
         chunks = await process_document(file)
+        if not chunks:
+            raise ValueError(f"No readable content could be extracted from '{file.filename}'.")
         add_documents(chunks)
         return UploadResponse(
             message="Document uploaded successfully",
@@ -134,15 +136,20 @@ async def upload_document(file: UploadFile = File(...)):
             chunks_stored=len(chunks)
         )
     except Exception as e:
-        logger.error(f"Error in upload_document: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        friendly = format_friendly_error(e)
+        logger.error(f"Error in upload_document: {friendly}", exc_info=True)
+        raise HTTPException(status_code=400, detail=friendly)
 
 
 @router.post("/rag/query", response_model=RAGQueryResponse)
 async def rag_query(request: RAGQueryRequest):
     try:
         # Retrieve chunks for reference
-        retriever = get_retriever(top_k=request.top_k)
+        retriever = get_retriever(
+            top_k=request.top_k,
+            provider=request.provider,
+            api_key=request.api_key
+        )
         docs = retriever.invoke(request.query)
         
         chunks = []

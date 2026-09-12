@@ -8,26 +8,32 @@ import { Search, Database, Sparkles, BookOpen, Layers, ChevronDown } from 'lucid
 import MarkdownFormatter from '../ui/MarkdownFormatter';
 
 export const RAGPanel = () => {
-  const { apiKey } = useAppStore();
+  const { apiKey, selectedProvider, selectedModel } = useAppStore();
   const { setNodeActive, clearActiveNodes } = useAgentStore();
 
   const [query, setQuery] = useState('');
   const [topK, setTopK] = useState(4);
-  const [localProvider, setLocalProvider] = useState('openai');
-  const [localModel, setLocalModel] = useState('gpt-4o-mini');
+  const [localProvider, setLocalProvider] = useState(selectedProvider || 'google');
+  const [localModel, setLocalModel] = useState(selectedModel || 'gemini-flash-lite-latest');
   
   const [answer, setAnswer] = useState('');
   const [chunks, setChunks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Sync with global store when backend config is loaded
+  React.useEffect(() => {
+    if (selectedProvider) setLocalProvider(selectedProvider);
+    if (selectedModel) setLocalModel(selectedModel);
+  }, [selectedProvider, selectedModel]);
+
   // Default models map for local override
   const handleProviderChange = (provider) => {
     setLocalProvider(provider);
-    if (provider === 'openai') setLocalModel('gpt-4o-mini');
+    if (provider === 'google') setLocalModel('gemini-flash-lite-latest');
+    else if (provider === 'openai') setLocalModel('gpt-4o-mini');
     else if (provider === 'anthropic') setLocalModel('claude-3-5-sonnet-20240620');
-    else if (provider === 'google') setLocalModel('gemini-1.5-pro');
-    else if (provider === 'groq') setLocalModel('llama3-8b-8192');
-    else if (provider === 'openrouter') setLocalModel('meta-llama/llama-3-8b-instruct:free');
+    else if (provider === 'groq') setLocalModel('llama-3.1-8b-instant');
+    else if (provider === 'openrouter') setLocalModel('openai/gpt-4o-mini');
     else if (provider === 'ollama') setLocalModel('llama3');
   };
 
