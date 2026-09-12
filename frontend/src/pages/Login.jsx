@@ -65,7 +65,7 @@ export const Login = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Read configured Google client_id and client_secret from localStorage
+  // Read configured Google client_id and client_secret from localStorage or environment
   const [googleClientId, setGoogleClientId] = useState(
     localStorage.getItem('nass_google_client_id') || import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
   );
@@ -73,6 +73,27 @@ export const Login = () => {
     localStorage.getItem('nass_google_client_secret') || import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
   );
   const [showConfig, setShowConfig] = useState(false);
+
+  // Auto-fetch credentials from backend .env if not locally present
+  useEffect(() => {
+    fetch('http://localhost:8000/api/v1/config/auth')
+      .then(res => res.json())
+      .then(data => {
+        if (data.google_client_id) {
+          setGoogleClientId(prev => prev || data.google_client_id);
+          if (!localStorage.getItem('nass_google_client_id')) {
+            localStorage.setItem('nass_google_client_id', data.google_client_id);
+          }
+        }
+        if (data.google_client_secret) {
+          setGoogleClientSecret(prev => prev || data.google_client_secret);
+          if (!localStorage.getItem('nass_google_client_secret')) {
+            localStorage.setItem('nass_google_client_secret', data.google_client_secret);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Check URL query parameters for auth code on mount (PKCE redirect callback)
   useEffect(() => {

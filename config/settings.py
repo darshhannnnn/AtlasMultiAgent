@@ -59,6 +59,40 @@ class Settings(BaseSettings):
     GMAIL_TOKEN_PATH: Optional[str] = "./token.json"
     SCOPES: str = "https://www.googleapis.com/auth/gmail.readonly"
 
+    # Google OAuth (Sign-In & Gmail)
+    GOOGLE_CLIENT_ID: Optional[str] = None
+    GOOGLE_CLIENT_SECRET: Optional[str] = None
+    GOOGLE_CLIENT_SECRET_KEY: Optional[str] = None
+
+    def ensure_credentials_file(self) -> str:
+        """
+        Ensures credentials.json exists on disk if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.
+        """
+        import json
+        import os
+        cred_path = self.GMAIL_CREDENTIALS_PATH or "credentials.json"
+        client_id = (self.GOOGLE_CLIENT_ID or "").strip()
+        client_secret = (self.GOOGLE_CLIENT_SECRET or self.GOOGLE_CLIENT_SECRET_KEY or "").strip()
+
+        if client_id and client_secret and not os.path.exists(cred_path):
+            data = {
+                "installed": {
+                    "client_id": client_id,
+                    "project_id": "agentic-ai",
+                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                    "token_uri": "https://oauth2.googleapis.com/token",
+                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                    "client_secret": client_secret,
+                    "redirect_uris": ["http://localhost", "http://localhost:8000", "http://localhost:5173"]
+                }
+            }
+            try:
+                with open(cred_path, "w", encoding="utf-8") as f:
+                    json.dump(data, f, indent=2)
+            except Exception:
+                pass
+        return cred_path
+
     def detect_llm_settings(self) -> Dict[str, Any]:
         """
         Intelligently auto-detect provider, active model, api key, and base URL from any environment variable.

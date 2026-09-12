@@ -38,13 +38,31 @@ def get_gmail_service():
                     creds = None
 
             if not creds:
-                if not os.path.exists(GMAIL_CREDENTIALS_PATH):
+                cred_path = settings.ensure_credentials_file()
+                client_id = (settings.GOOGLE_CLIENT_ID or "").strip()
+                client_secret = (settings.GOOGLE_CLIENT_SECRET or settings.GOOGLE_CLIENT_SECRET_KEY or "").strip()
+
+                if os.path.exists(cred_path):
+                    flow = InstalledAppFlow.from_client_secrets_file(cred_path, SCOPES)
+                    creds = flow.run_local_server(port=0)
+                elif client_id and client_secret:
+                    client_config = {
+                        "installed": {
+                            "client_id": client_id,
+                            "client_secret": client_secret,
+                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                            "token_uri": "https://oauth2.googleapis.com/token",
+                            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+                            "redirect_uris": ["http://localhost"]
+                        }
+                    }
+                    flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
+                    creds = flow.run_local_server(port=0)
+                else:
                     raise FileNotFoundError(
-                        f"Google OAuth client secrets file '{GMAIL_CREDENTIALS_PATH}' is missing. "
-                        "Please place your credentials.json file in the root directory to initiate OAuth authentication."
+                        f"Google OAuth client credentials missing. "
+                        "Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
                     )
-                flow = InstalledAppFlow.from_client_secrets_file(GMAIL_CREDENTIALS_PATH, SCOPES)
-                creds = flow.run_local_server(port=0)
 
             os.makedirs(os.path.dirname(GMAIL_TOKEN_PATH), exist_ok=True)
             with open(GMAIL_TOKEN_PATH, "w") as token_file:

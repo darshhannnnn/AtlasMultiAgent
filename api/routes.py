@@ -455,3 +455,14 @@ async def google_auth(request: GoogleAuthRequest):
     except Exception as e:
         logger.error(f"Error in google_auth: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/config/auth")
+async def get_auth_config():
+    client_id = (settings.GOOGLE_CLIENT_ID or "").strip()
+    client_secret = (settings.GOOGLE_CLIENT_SECRET or settings.GOOGLE_CLIENT_SECRET_KEY or "").strip()
+    return {
+        "google_client_id": client_id,
+        "google_client_secret": client_secret,
+        "has_google_auth": bool(client_id)
+    }
