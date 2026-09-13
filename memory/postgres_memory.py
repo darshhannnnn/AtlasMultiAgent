@@ -195,6 +195,30 @@ def init_user_table():
     except Exception as e:
         logger.error(f"Error initializing Postgres user/facts tables: {e}")
 
+def init_gmail_tokens_table():
+    if not check_postgres_availability():
+        logger.warning("PostgreSQL not available, skipping gmail_tokens table initialization")
+        return
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS gmail_tokens (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                access_token TEXT NOT NULL,
+                refresh_token TEXT,
+                token_expiry TIMESTAMP,
+                connected_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+        logger.info("Postgres gmail_tokens table initialized successfully.")
+    except Exception as e:
+        logger.error(f"Error initializing Postgres gmail_tokens table: {e}")
+
 def create_local_user(email: str, password_hash: str, name: str) -> dict:
     if not check_postgres_availability():
         raise Exception("PostgreSQL not available - cannot create user")
@@ -282,3 +306,74 @@ def get_or_create_google_user(email: str, name: str, picture: str) -> dict:
             "picture": row[3],
             "auth_provider": row[4]
         }
+
+
+def save_gmail_token(user_id, access_token, refresh_token, token_expiry):
+    if not check_postgres_availability():
+        raise Exception("PostgreSQL not available - cannot save Gmail token")
+    conn = get_connection()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO gmail_tokens (user_id, access_token, refresh_token, token_expiry, connected_at)
+        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)
+        ON CONFLICT (user_id) DO UPDATE SET
+            access_token = EXCLUDED.access_token,
+            refresh_token = COALESCE(EXCLUDED.refresh_token, gmail_tokens.refresh_token),
+            token_expiry = EXCLUDED.token_expiry,
+            connected_at = CURRENT_TIMESTAMP
+        RETURNING id, user_id, access_token, refresh_token, token_expiry, connected_at;
+    """, (user_id, access_token, refresh_token, token_expiry))
+    row = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {
+        "id": row[0],
+        "user_id": row[1],
+        "access_token": row[2],
+        "refresh_token": row[3],
+        "token_expiry": row[4],
+        "connected_at": row[5]
+    }
+
+
+def get_gmail_token(user_id):
+    if not check_postgres_availability():
+        return None
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT access_token, refresh_token, token_expiry FROM gmail_tokens WHERE user_id = %s",
+            (user_id,)
+        )
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        if not row:
+            return None
+        return {
+            "access_token": row[0],
+            "refresh_token": row[1],
+            "token_expiry": row[2]
+        }
+    except Exception as e:
+        logger.error(f"Error getting Gmail token for user {user_id}: {e}")
+        return None
+
+
+def delete_gmail_token(user_id):
+    if not check_postgres_availability():
+        logger.warning("PostgreSQL not available, skipping delete_gmail_token")
+        return False
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("DELETE FROM gmail_tokens WHERE user_id = %s", (user_id,))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"Error deleting Gmail token for user {user_id}: {e}")
+        return False

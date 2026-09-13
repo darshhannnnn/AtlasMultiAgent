@@ -59,6 +59,12 @@ class Settings(BaseSettings):
     GMAIL_CREDENTIALS_PATH: Optional[str] = "credentials.json"
     GMAIL_TOKEN_PATH: Optional[str] = "./token.json"
     SCOPES: str = "https://www.googleapis.com/auth/gmail.readonly"
+    GMAIL_WEB_CLIENT_ID: str = ""
+    GMAIL_WEB_CLIENT_SECRET: str = ""
+    GMAIL_REDIRECT_URI: str = "http://localhost:8000/api/v1/gmail/callback"
+
+    # Auth / JWT
+    JWT_SECRET_KEY: str = ""
 
     def detect_llm_settings(self) -> Dict[str, Any]:
         """

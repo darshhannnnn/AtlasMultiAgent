@@ -1,61 +1,44 @@
-import os
 import logging
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
-from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from config.settings import settings
-from langchain_community.tools import  Tool
+from langchain_community.tools import Tool
+from memory.postgres_memory import get_gmail_token, save_gmail_token
 
 logger = logging.getLogger(__name__)
 
 SCOPES = [settings.SCOPES]
-GMAIL_TOKEN_PATH = settings.GMAIL_TOKEN_PATH
-GMAIL_CREDENTIALS_PATH = settings.GMAIL_CREDENTIALS_PATH
 
-def get_gmail_service():
+
+def get_gmail_service(user_id):
     try:
-        creds = None
+        token_data = get_gmail_token(user_id)
+        if not token_data:
+            return "error in calling gmail: Gmail not connected for this user. Please connect your Gmail account first."
 
-        if os.path.exists(GMAIL_TOKEN_PATH):
-            try:
-                creds = Credentials.from_authorized_user_file(GMAIL_TOKEN_PATH, SCOPES)
-            except Exception as e:
-                logger.warning(f"Error loading authorized user file from {GMAIL_TOKEN_PATH}: {e}. Re-authenticating...")
-                creds = None
+        creds = Credentials(
+            token=token_data["access_token"],
+            refresh_token=token_data["refresh_token"],
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=settings.GMAIL_WEB_CLIENT_ID,
+            client_secret=settings.GMAIL_WEB_CLIENT_SECRET,
+            scopes=SCOPES,
+            expiry=token_data.get("token_expiry")
+        )
 
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                try:
-                    creds.refresh(Request())
-                except Exception as e:
-                    logger.warning(f"Failed to refresh credentials: {e}. Removing token file and re-authenticating.")
-                    if os.path.exists(GMAIL_TOKEN_PATH):
-                        try:
-                            os.remove(GMAIL_TOKEN_PATH)
-                        except Exception:
-                            pass
-                    creds = None
-
-            if not creds:
-                logger.warning(
-                    f"Gmail token file not found at '{GMAIL_TOKEN_PATH}'. "
-                    "Gmail integration is not authorized yet. Skipping automatic browser prompt to prevent server lockup."
-                )
-                return "error in calling gmail: Gmail integration not authenticated. token.json not found. Please authenticate your Gmail account."
-
-            os.makedirs(os.path.dirname(GMAIL_TOKEN_PATH), exist_ok=True)
-            with open(GMAIL_TOKEN_PATH, "w") as token_file:
-                token_file.write(creds.to_json())
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+            save_gmail_token(user_id, creds.token, creds.refresh_token, creds.expiry)
 
         return build("gmail", "v1", credentials=creds)
     except Exception as e:
         return f"error in calling gmail: {e}"
 
 
-def fetch_recent_emails(max_results=10, label="INBOX", q=None):
+def fetch_recent_emails(user_id, max_results=10, label="INBOX", q=None):
     try:
-        service = get_gmail_service()
+        service = get_gmail_service(user_id)
         if isinstance(service, str):
             # If error string is returned from get_gmail_service
             raise Exception(service)
@@ -91,9 +74,9 @@ def fetch_recent_emails(max_results=10, label="INBOX", q=None):
         return f"error in retrieving email from gmail : {e}"
 
 
-def fetch_single_email(msg_id):
+def fetch_single_email(msg_id, user_id):
     try:
-        service = get_gmail_service()
+        service = get_gmail_service(user_id)
         if isinstance(service, str):
             raise Exception(service)
 

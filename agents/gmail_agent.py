@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 
 
 def run_gmail_agent(
+    user_id: int,
     max_email: int = 10,
     provider: Optional[str] = None,
     model_name: Optional[str] = None,
@@ -22,7 +23,7 @@ def run_gmail_agent(
     """
     try:
         if emails is None:
-            fetched = fetch_recent_emails(max_email)
+            fetched = fetch_recent_emails(user_id, max_results=max_email)
             if isinstance(fetched, str):
                 return fetched
             emails = fetched
@@ -51,7 +52,8 @@ def run_gmail_agent(
              "For each email, output:\n"
              "1. Sender, Date, and Subject\n"
              "2. A concise 2-3 sentence summary of the contents\n"
-             "3. A status indicating if action is required (Yes/No and action item detail if Yes)\n\n"
+             "3. A status indicating if action is required (Yes/No and action item detail if Yes)\n"
+             "4. A spam classification: \"Spam\" or \"Not Spam\", with a brief one-sentence reason (e.g. suspicious sender, urgent financial request, generic mass-marketing language, etc. vs. legitimate sender and normal content)\n\n"
              "Do not add any preamble or conversational fillers. Output the list directly."
              ),
             ("human", "Summarize these emails:\n\n{query}")

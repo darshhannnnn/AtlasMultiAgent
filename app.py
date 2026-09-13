@@ -47,6 +47,11 @@ async def startup():
         init_user_table()
     except Exception as e:
         logger.error(f"Failed to initialize user database: {e}")
+    try:
+        from memory.postgres_memory import init_gmail_tokens_table
+        init_gmail_tokens_table()
+    except Exception as e:
+        logger.error(f"Failed to initialize gmail_tokens database: {e}")
 
 
 @app.on_event("shutdown")

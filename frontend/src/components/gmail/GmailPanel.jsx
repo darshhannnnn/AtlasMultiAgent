@@ -4,10 +4,10 @@ import { useAgentStore } from '../../store/useAgentStore';
 import EmailList from './EmailList';
 import SummaryCard from './SummaryCard';
 import GlassCard from '../ui/GlassCard';
-import { Mail, Sparkles, LogIn, RefreshCw, Check } from 'lucide-react';
+import { Mail, Sparkles, LogIn, RefreshCw, Check, LogOut } from 'lucide-react';
 
 export const GmailPanel = () => {
-  const { apiKey, activeProvider, modelName } = useAppStore();
+  const { apiKey, activeProvider, modelName, user } = useAppStore();
   const { setNodeActive, clearActiveNodes } = useAgentStore();
 
   const [connected, setConnected] = useState(false);
@@ -19,11 +19,36 @@ export const GmailPanel = () => {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
 
   const [labelFilter, setLabelFilter] = useState('INBOX');
   const [searchQuery, setSearchQuery] = useState('');
 
+  const checkGmailStatus = async () => {
+    if (!user?.token) return false;
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/gmail/status', {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`
+        }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        const isConn = !!data.connected;
+        setConnected(isConn);
+        return isConn;
+      }
+      setConnected(false);
+      return false;
+    } catch (err) {
+      console.error('Error checking Gmail status:', err);
+      setConnected(false);
+      return false;
+    }
+  };
+
   const fetchEmailsList = async () => {
+    if (!user?.token) return;
     setIsLoading(true);
     setNodeActive('gmail_agent', true);
 
@@ -34,23 +59,22 @@ export const GmailPanel = () => {
         url += `&q=${encodeURIComponent(searchQuery.trim())}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data)) {
           setEmails(data);
-          setConnected(true);
         } else {
-          // If error text string is returned
-          console.warn('OAuth credentials validation returned error string:', data);
-          setConnected(false);
+          console.warn('Gmail list returned non-array:', data);
         }
-      } else {
-        setConnected(false);
       }
     } catch (error) {
-      console.warn('Connection offline or unauthorized. Gmail oauth file missing.', error);
-      setConnected(false);
+      console.warn('Error fetching emails list:', error);
     } finally {
       setIsLoading(false);
       setTimeout(() => {
@@ -59,35 +83,52 @@ export const GmailPanel = () => {
     }
   };
 
-  // Attempt to check if OAuth tokens exist
+  // Check Gmail connection status on mount and load emails if connected
   useEffect(() => {
-    fetchEmailsList();
-  }, [labelFilter, searchQuery]);
+    const init = async () => {
+      const isConn = await checkGmailStatus();
+      if (isConn) {
+        fetchEmailsList();
+      }
+    };
+    init();
+  }, [labelFilter, searchQuery, user?.token]);
 
   const handleConnect = async () => {
     setIsLoading(true);
     setNodeActive('gmail_agent', true);
 
     try {
-      // InstalledAppFlow initiates local browser window login popup
-      const response = await fetch('http://localhost:8000/api/v1/gmail/list?max_results=5');
-      if (response.ok) {
-        const data = await response.json();
-        if (Array.isArray(data)) {
-          setEmails(data);
-          setConnected(true);
-        } else {
-          alert(`Gmail connection warning: ${data}`);
+      const response = await fetch('http://localhost:8000/api/v1/gmail/connect', {
+        headers: {
+          'Authorization': `Bearer ${user?.token}`
         }
-      } else {
-        let errorMsg = 'Credentials file credentials.json not found in server root. Please add it to start OAuth.';
-        try {
-          const errData = await response.json();
-          if (errData && errData.detail) {
-            errorMsg = errData.detail;
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.detail || 'Failed to initiate Gmail connection.');
+      }
+
+      const data = await response.json();
+      if (data.auth_url) {
+        window.open(data.auth_url, '_blank');
+        setIsConnecting(true);
+
+        // Automatically poll /api/v1/gmail/status every 3 seconds for up to 30 seconds
+        let elapsed = 0;
+        const pollInterval = setInterval(async () => {
+          elapsed += 3;
+          const isConn = await checkGmailStatus();
+          if (isConn) {
+            clearInterval(pollInterval);
+            setIsConnecting(false);
+            fetchEmailsList();
+          } else if (elapsed >= 30) {
+            clearInterval(pollInterval);
+            setIsConnecting(false);
           }
-        } catch (_) {}
-        alert(`Gmail connection error: ${errorMsg}`);
+        }, 3000);
       }
     } catch (error) {
       alert(`Gmail connection error: ${error.message}`);
@@ -96,6 +137,38 @@ export const GmailPanel = () => {
       setTimeout(() => {
         clearActiveNodes();
       }, 1000);
+    }
+  };
+
+  const handleManualRefreshAfterConnect = async () => {
+    const isConn = await checkGmailStatus();
+    if (isConn) {
+      setIsConnecting(false);
+      fetchEmailsList();
+    }
+  };
+
+  const handleDisconnect = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/gmail/disconnect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        }
+      });
+      if (response.ok) {
+        setConnected(false);
+        setEmails([]);
+        setActiveEmail(null);
+        setSummary('');
+      } else {
+        const errData = await response.json().catch(() => ({}));
+        alert(`Failed to disconnect: ${errData.detail || 'Unknown error'}`);
+      }
+    } catch (err) {
+      console.error('Error disconnecting Gmail:', err);
+      alert(`Failed to disconnect: ${err.message}`);
     }
   };
 
@@ -109,7 +182,10 @@ export const GmailPanel = () => {
     try {
       const response = await fetch('http://localhost:8000/api/v1/gmail/summarize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
         body: JSON.stringify({
           email_ids: [msgId],
           provider: activeProvider,
@@ -148,7 +224,10 @@ export const GmailPanel = () => {
     try {
       const response = await fetch('http://localhost:8000/api/v1/gmail/summarize', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user?.token}`
+        },
         body: JSON.stringify({
           email_ids: selectedIds,
           provider: activeProvider,
@@ -193,12 +272,12 @@ export const GmailPanel = () => {
           </h2>
           
           <p className="text-xs text-stone-600 leading-relaxed mb-6 font-sans">
-            Connect your Google Workspace or Gmail Account. Nass Agent requires a valid Google OAuth OAuth2 consent validation to securely view messages.
+            Connect your Google Workspace or Gmail account to securely view, summarize, and manage your emails with AI.
           </p>
 
           <button
             onClick={handleConnect}
-            disabled={isLoading}
+            disabled={isLoading || isConnecting}
             className="flex items-center justify-center gap-2.5 w-full py-3 rounded-xl bg-gradient-to-r from-beige-400 to-beige-600 hover:from-beige-300 hover:to-beige-500 text-white font-semibold text-xs transition-all disabled:opacity-50 shadow-[0_4px_16px_rgba(168,152,120,0.2)]"
           >
             {isLoading ? (
@@ -206,12 +285,20 @@ export const GmailPanel = () => {
             ) : (
               <LogIn className="h-4 w-4" />
             )}
-            <span>Connect Google Account via OAuth2</span>
+            <span>Connect Gmail Account</span>
           </button>
 
-          <p className="text-[10px] text-stone-500 mt-4 font-mono font-bold leading-normal">
-            Note: Place credentials.json in the project root first.
-          </p>
+          {isConnecting && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex flex-col gap-2 w-full text-center">
+              <p>A new tab was opened for Google sign-in. Complete the consent flow there, then click:</p>
+              <button
+                onClick={handleManualRefreshAfterConnect}
+                className="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-xs self-center transition-colors"
+              >
+                I've connected, refresh
+              </button>
+            </div>
+          )}
         </GlassCard>
       </div>
     );
@@ -229,14 +316,25 @@ export const GmailPanel = () => {
               <span>Inbox Navigator</span>
             </div>
             
-            <button 
-              onClick={fetchEmailsList}
-              disabled={isLoading}
-              className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
-              title="Refresh Inbox"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={fetchEmailsList}
+                disabled={isLoading}
+                className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+                title="Refresh Inbox"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              </button>
+
+              <button
+                onClick={handleDisconnect}
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 text-xs font-medium transition-colors border border-transparent hover:border-red-200"
+                title="Disconnect Gmail"
+              >
+                <LogOut className="h-3 w-3" />
+                <span>Disconnect</span>
+              </button>
+            </div>
           </div>
 
           <EmailList 

@@ -4,8 +4,11 @@ import time
 import httpx
 import hashlib
 import os
+import jwt
+from datetime import datetime, timedelta
 from typing import Optional, List
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from schemas.request_models import (
     ChatRequest, ChatResponse,
@@ -19,12 +22,16 @@ from schemas.request_models import (
 from config.settings import settings
 from rag.chunking import process_document
 from rag.vector_store import add_documents, get_retriever
+from google_auth_oauthlib.flow import Flow
 from memory.memory_manager import handle_message, check_and_save_fact, get_context
 from tools.gmail_tools import fetch_recent_emails, fetch_single_email
 from memory.postgres_memory import (
     create_local_user,
     get_user_by_email,
-    get_or_create_google_user
+    get_or_create_google_user,
+    save_gmail_token,
+    get_gmail_token,
+    delete_gmail_token
 )
 
 # Agents
@@ -185,59 +192,6 @@ async def rag_query(request: RAGQueryRequest):
         raise HTTPException(status_code=400, detail=friendly)
 
 
-@router.get("/gmail/list")
-async def gmail_list(max_results: int = 10, label: str = "INBOX", q: Optional[str] = None):
-    try:
-        emails = fetch_recent_emails(max_results=max_results, label=label, q=q)
-        if isinstance(emails, str) and emails.startswith("error"):
-            raise HTTPException(status_code=500, detail=emails)
-        return emails
-    except Exception as e:
-        logger.error(f"Error in gmail_list: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/gmail/get/{msg_id}")
-async def gmail_get(msg_id: str):
-    try:
-        email = fetch_single_email(msg_id)
-        if isinstance(email, str) and email.startswith("error"):
-            raise HTTPException(status_code=500, detail=email)
-        return email
-    except Exception as e:
-        logger.error(f"Error in gmail_get: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/gmail/summary")
-@router.post("/gmail/summarize")
-async def gmail_summarize(request: Optional[GmailSummarizeRequest] = None):
-    try:
-        emails_to_summarize = None
-        
-        if request and request.email_ids:
-            # Fetch specific email details
-            emails_to_summarize = []
-            for email_id in request.email_ids:
-                email = fetch_single_email(email_id)
-                if isinstance(email, dict):
-                    emails_to_summarize.append(email)
-        
-        # Call the Gmail Agent summary pipeline with transient api key
-        summary = run_gmail_agent(
-            max_email=10,
-            provider=request.provider if request else None,
-            model_name=request.model if request else None,
-            emails=emails_to_summarize,
-            api_key=request.api_key if request else None
-        )
-        return GmailResponse(summary=summary)
-    except Exception as e:
-        friendly = format_friendly_error(e)
-        logger.error(f"Error in gmail_summarize: {friendly}", exc_info=True)
-        raise HTTPException(status_code=400, detail=friendly)
-
-
 @router.post("/code/generate", response_model=CodeGenerateResponse)
 async def code_generate(request: CodeGenerateRequest):
     try:
@@ -381,6 +335,144 @@ def verify_password(stored_password: str, provided_password: str) -> bool:
         return False
 
 
+def create_access_token(user_id: int, email: str) -> str:
+    payload = {
+        "user_id": user_id,
+        "email": email,
+        "exp": datetime.utcnow() + timedelta(days=7)
+    }
+    return jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
+
+
+security = HTTPBearer()
+
+
+def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> dict:
+    try:
+        payload = jwt.decode(credentials.credentials, settings.JWT_SECRET_KEY, algorithms=["HS256"])
+        return {"user_id": payload["user_id"], "email": payload["email"]}
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired, please log in again.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid authentication token.")
+
+
+def get_gmail_flow():
+    return Flow.from_client_config(
+        {
+            "web": {
+                "client_id": settings.GMAIL_WEB_CLIENT_ID,
+                "client_secret": settings.GMAIL_WEB_CLIENT_SECRET,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [settings.GMAIL_REDIRECT_URI],
+            }
+        },
+        scopes=[settings.SCOPES],
+        redirect_uri=settings.GMAIL_REDIRECT_URI,
+    )
+
+
+@router.get("/gmail/connect")
+async def gmail_connect(current_user: dict = Depends(get_current_user)):
+    flow = get_gmail_flow()
+    auth_url, state = flow.authorization_url(
+        access_type="offline",
+        prompt="consent",
+        state=str(current_user["user_id"])
+    )
+    return {"auth_url": auth_url}
+
+
+@router.get("/gmail/callback")
+async def gmail_callback(code: str, state: str):
+    user_id = int(state)
+    flow = get_gmail_flow()
+    flow.fetch_token(code=code)
+    creds = flow.credentials
+    save_gmail_token(
+        user_id=user_id,
+        access_token=creds.token,
+        refresh_token=creds.refresh_token,
+        token_expiry=creds.expiry
+    )
+    return {"message": "Gmail connected successfully. You can close this tab."}
+
+
+@router.get("/gmail/status")
+async def gmail_status(current_user: dict = Depends(get_current_user)):
+    token = get_gmail_token(current_user["user_id"])
+    return {"connected": token is not None}
+
+
+@router.post("/gmail/disconnect")
+async def gmail_disconnect(current_user: dict = Depends(get_current_user)):
+    delete_gmail_token(current_user["user_id"])
+    return {"message": "Gmail disconnected."}
+
+
+@router.get("/gmail/list")
+async def gmail_list(
+    max_results: int = 10, 
+    label: str = "INBOX", 
+    q: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        emails = fetch_recent_emails(current_user["user_id"], max_results=max_results, label=label, q=q)
+        if isinstance(emails, str) and emails.startswith("error"):
+            raise HTTPException(status_code=500, detail=emails)
+        return emails
+    except Exception as e:
+        logger.error(f"Error in gmail_list: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/gmail/get/{msg_id}")
+async def gmail_get(msg_id: str, current_user: dict = Depends(get_current_user)):
+    try:
+        email = fetch_single_email(msg_id, current_user["user_id"])
+        if isinstance(email, str) and email.startswith("error"):
+            raise HTTPException(status_code=500, detail=email)
+        return email
+    except Exception as e:
+        logger.error(f"Error in gmail_get: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/gmail/summary")
+@router.post("/gmail/summarize")
+async def gmail_summarize(
+    request: Optional[GmailSummarizeRequest] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    try:
+        emails_to_summarize = None
+        
+        if request and request.email_ids:
+            # Fetch specific email details
+            emails_to_summarize = []
+            for email_id in request.email_ids:
+                email = fetch_single_email(email_id, current_user["user_id"])
+                if isinstance(email, dict):
+                    emails_to_summarize.append(email)
+        
+        # Call the Gmail Agent summary pipeline with transient api key
+        summary = run_gmail_agent(
+            user_id=current_user["user_id"],
+            max_email=10,
+            provider=request.provider if request else None,
+            model_name=request.model if request else None,
+            emails=emails_to_summarize,
+            api_key=request.api_key if request else None
+        )
+        return GmailResponse(summary=summary)
+    except Exception as e:
+        friendly = format_friendly_error(e)
+        logger.error(f"Error in gmail_summarize: {friendly}", exc_info=True)
+        raise HTTPException(status_code=400, detail=friendly)
+
+
 @router.post("/auth/signup")
 async def signup(request: UserSignUpRequest):
     try:
@@ -398,6 +490,7 @@ async def signup(request: UserSignUpRequest):
         
         pw_hash = hash_password(request.password)
         user = create_local_user(request.email, pw_hash, request.name)
+        user["token"] = create_access_token(user["id"], user["email"])
         return user
     except HTTPException as he:
         raise he
@@ -432,7 +525,8 @@ async def login_local(request: UserLoginRequest):
             "email": user["email"],
             "name": user["name"],
             "picture": user["picture"],
-            "auth_provider": user["auth_provider"]
+            "auth_provider": user["auth_provider"],
+            "token": create_access_token(user["id"], user["email"])
         }
     except HTTPException as he:
         raise he
@@ -453,12 +547,18 @@ async def google_auth(request: GoogleAuthRequest):
             )
         
         user = get_or_create_google_user(request.email, request.name, request.picture)
+        user["token"] = create_access_token(user["id"], user["email"])
         return user
     except HTTPException as he:
         raise he
     except Exception as e:
         logger.error(f"Error in google_auth: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/auth/me")
+async def get_me(current_user: dict = Depends(get_current_user)):
+    return current_user
 
 
 @router.get("/config/auth")

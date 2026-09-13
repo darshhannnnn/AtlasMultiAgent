@@ -54,7 +54,7 @@ class GmailResponse(BaseModel):
 
 
 class GmailSummarizeRequest(BaseModel):
-    email_ids: List[str]
+    email_ids: Optional[List[str]] = None
     provider: Optional[str] = None
     model: Optional[str] = None
     api_key: Optional[str] = None
