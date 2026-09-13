@@ -38,31 +38,11 @@ def get_gmail_service():
                     creds = None
 
             if not creds:
-                cred_path = settings.ensure_credentials_file()
-                client_id = (settings.GOOGLE_CLIENT_ID or "").strip()
-                client_secret = (settings.GOOGLE_CLIENT_SECRET or settings.GOOGLE_CLIENT_SECRET_KEY or "").strip()
-
-                if os.path.exists(cred_path):
-                    flow = InstalledAppFlow.from_client_secrets_file(cred_path, SCOPES)
-                    creds = flow.run_local_server(port=0)
-                elif client_id and client_secret:
-                    client_config = {
-                        "installed": {
-                            "client_id": client_id,
-                            "client_secret": client_secret,
-                            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                            "token_uri": "https://oauth2.googleapis.com/token",
-                            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                            "redirect_uris": ["http://localhost"]
-                        }
-                    }
-                    flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
-                    creds = flow.run_local_server(port=0)
-                else:
-                    raise FileNotFoundError(
-                        f"Google OAuth client credentials missing. "
-                        "Please configure GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in your .env file."
-                    )
+                logger.warning(
+                    f"Gmail token file not found at '{GMAIL_TOKEN_PATH}'. "
+                    "Gmail integration is not authorized yet. Skipping automatic browser prompt to prevent server lockup."
+                )
+                return "error in calling gmail: Gmail integration not authenticated. token.json not found. Please authenticate your Gmail account."
 
             os.makedirs(os.path.dirname(GMAIL_TOKEN_PATH), exist_ok=True)
             with open(GMAIL_TOKEN_PATH, "w") as token_file:

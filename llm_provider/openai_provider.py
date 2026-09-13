@@ -29,6 +29,13 @@ class OpenAIProvider(BaseLLMProvider):
             temperature = self.config.get("temperature", 0.7)
             max_tokens = self.config.get("max_tokens")
 
+            # Branch Google/Gemini endpoint separately to avoid sending Authorization: Bearer to generativelanguage.googleapis.com
+            if base_url and "generativelanguage.googleapis.com" in base_url:
+                from .google_provider import GoogleProvider
+                google_cfg = self.config.copy()
+                google_cfg["provider"] = "google"
+                return GoogleProvider(**google_cfg).get_model()
+
             # Setup ChatOpenAI with correct parameter names
             kwargs = {
                 "api_key": api_key,

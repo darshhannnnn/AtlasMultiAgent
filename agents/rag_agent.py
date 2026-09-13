@@ -24,7 +24,7 @@ def run_rag_agent(
     """
     try:
         model = get_llm_model(
-            provider=provider,
+            provider="groq",
             model=model_name,
             api_key=api_key,
             temperature=0,

@@ -34,8 +34,8 @@ def _apply_thought_signature_patch():
             ai_msg.additional_kwargs["thought_signatures"] = signatures
         return ai_msg
 
-    def patched_parse_history(input_messages, convert_system_message_to_human=False):
-        system_instruction, contents = orig_parse_history(input_messages, convert_system_message_to_human)
+    def patched_parse_history(input_messages, convert_system_message_to_human=False, **kwargs):
+        system_instruction, contents = orig_parse_history(input_messages, convert_system_message_to_human, **kwargs)
         # Re-attach thought_signatures to matching function_call parts in model content turns
         ai_msgs_with_sig = [
             m for m in input_messages 
@@ -94,11 +94,50 @@ class GoogleProvider(BaseLLMProvider):
             temperature = self.config.get("temperature", 0.7)
             max_tokens = self.config.get("max_tokens")
 
-            # Setup ChatGoogleGenerativeAI
+            # Setup ChatGoogleGenerativeAI with explicit client_options api_key for x-goog-api-key header
             self._model = ChatGoogleGenerativeAI(
                 google_api_key=api_key,
                 model=model_name,
                 temperature=temperature,
                 max_output_tokens=max_tokens,
+                timeout=45,
+                max_retries=2,
+                transport="rest",
             )
         return self._model
+
+    def generate_content_rest(self, prompt: str, **kwargs) -> str:
+        """
+        Direct REST call to generativelanguage.googleapis.com without any Authorization header.
+        Passes the API key strictly as a URL query parameter:
+        requests.post(url, params={"key": api_key}, ...)
+        """
+        import requests
+        self.validate_config()
+        api_key = self.config.get("api_key") or self.config.get("google_api_key")
+        model_name = self.config.get("model") or "gemini-flash-lite-latest"
+        if model_name in ["gemini-3.5-flash", "gemini-3.6-flash"]:
+            model_name = "gemini-flash-lite-latest"
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_name}:generateContent"
+        # Explicitly ensure NO Authorization header is passed
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}]
+        }
+
+        response = requests.post(
+            url,
+            params={"key": api_key},
+            json=payload,
+            headers=headers,
+            timeout=kwargs.get("timeout", 45)
+        )
+        response.raise_for_status()
+        data = response.json()
+        candidates = data.get("candidates", [])
+        if candidates and "content" in candidates[0]:
+            parts = candidates[0]["content"].get("parts", [])
+            if parts and "text" in parts[0]:
+                return parts[0]["text"]
+        return ""

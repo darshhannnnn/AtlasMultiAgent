@@ -11,6 +11,11 @@ const getStoredKey = (provider) => {
     localStorage.removeItem(`ai_agent_key_${provider}`);
     return '';
   }
+  // Automatically purge invalid Google keys (must start with AQ. or AIza)
+  if (provider === 'google' && key && !key.trim().startsWith('AQ.') && !key.trim().startsWith('AIza')) {
+    localStorage.removeItem(`ai_agent_key_${provider}`);
+    return '';
+  }
   return key;
 };
 
@@ -45,9 +50,9 @@ export const useAppStore = create((set, get) => ({
   isAuthenticated: !!getStoredUser(),
 
   activeSection: 'chat', // 'rag', 'chat', 'gmail', 'coding'
-  activeProvider: 'openai', // 'openai', 'anthropic', 'google', 'groq', 'openrouter', 'ollama'
-  modelName: 'gpt-4o-mini',
-  apiKey: getStoredKey('openai'),
+  activeProvider: 'google', // 'openai', 'anthropic', 'google', 'groq', 'openrouter', 'ollama'
+  modelName: 'gemini-flash-lite-latest',
+  apiKey: getStoredKey('google'),
   ollamaBaseUrl: 'http://localhost:11434',
   gmailConnected: false,
   agentMode: false,
@@ -149,13 +154,13 @@ export const useAppStore = create((set, get) => ({
       if (response.ok) {
         const data = await response.json();
         set({ backendConfig: data });
-        // If user does not have a custom key stored locally, adopt backend .env configuration
-        const currentCustomKey = getStoredKey(data.provider);
-        if (!currentCustomKey) {
+        // Sync UI provider and model to the active backend configuration
+        if (data.has_key && data.provider) {
+          const currentCustomKey = getStoredKey(data.provider);
           set({
             activeProvider: data.provider,
             modelName: data.model,
-            apiKey: ''
+            apiKey: currentCustomKey || ''
           });
         }
       }
@@ -171,7 +176,7 @@ export const useAppStore = create((set, get) => ({
   setActiveProvider: (provider) => {
     let defaultModel = 'gpt-4o-mini';
     if (provider === 'anthropic') defaultModel = 'claude-3-5-sonnet-20240620';
-    if (provider === 'google') defaultModel = 'gemini-3.5-flash';
+    if (provider === 'google') defaultModel = 'gemini-flash-lite-latest';
     if (provider === 'groq') defaultModel = 'llama-3.1-8b-instant';
     if (provider === 'openrouter') defaultModel = 'meta-llama/llama-3-8b-instruct:free';
     if (provider === 'ollama') defaultModel = 'llama3';

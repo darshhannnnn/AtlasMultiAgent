@@ -34,6 +34,7 @@ class Settings(BaseSettings):
 
     # Embeddings
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+    GOOGLE_EMBEDDING_API_KEY: Optional[str] = None
 
     # ChromaDB
     CHROMA_PERSIST_DIR: str = "./chroma_db"
@@ -59,40 +60,6 @@ class Settings(BaseSettings):
     GMAIL_TOKEN_PATH: Optional[str] = "./token.json"
     SCOPES: str = "https://www.googleapis.com/auth/gmail.readonly"
 
-    # Google OAuth (Sign-In & Gmail)
-    GOOGLE_CLIENT_ID: Optional[str] = None
-    GOOGLE_CLIENT_SECRET: Optional[str] = None
-    GOOGLE_CLIENT_SECRET_KEY: Optional[str] = None
-
-    def ensure_credentials_file(self) -> str:
-        """
-        Ensures credentials.json exists on disk if GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.
-        """
-        import json
-        import os
-        cred_path = self.GMAIL_CREDENTIALS_PATH or "credentials.json"
-        client_id = (self.GOOGLE_CLIENT_ID or "").strip()
-        client_secret = (self.GOOGLE_CLIENT_SECRET or self.GOOGLE_CLIENT_SECRET_KEY or "").strip()
-
-        if client_id and client_secret and not os.path.exists(cred_path):
-            data = {
-                "installed": {
-                    "client_id": client_id,
-                    "project_id": "agentic-ai",
-                    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                    "token_uri": "https://oauth2.googleapis.com/token",
-                    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                    "client_secret": client_secret,
-                    "redirect_uris": ["http://localhost", "http://localhost:8000", "http://localhost:5173"]
-                }
-            }
-            try:
-                with open(cred_path, "w", encoding="utf-8") as f:
-                    json.dump(data, f, indent=2)
-            except Exception:
-                pass
-        return cred_path
-
     def detect_llm_settings(self) -> Dict[str, Any]:
         """
         Intelligently auto-detect provider, active model, api key, and base URL from any environment variable.
@@ -102,46 +69,52 @@ class Settings(BaseSettings):
         model = (self.LLM_MODEL or self.OPENAI_MODEL or "").strip()
         base_url = self.LLM_BASE_URL or self.BASE_URL
 
-        # 1. Check explicit provider-specific keys first
-        if self.GOOGLE_API_KEY or self.GEMINI_API_KEY:
-            api_key = (self.GOOGLE_API_KEY or self.GEMINI_API_KEY or "").strip()
-            if not provider:
+        # 1. If provider is explicitly configured, pick its corresponding key
+        if provider == "google":
+            api_key = (self.GOOGLE_API_KEY or self.GEMINI_API_KEY or self.LLM_API_KEY or "").strip()
+        elif provider == "openai":
+            api_key = (self.OPENAI_API_KEY or self.LLM_API_KEY or "").strip()
+        elif provider == "anthropic":
+            api_key = (self.ANTHROPIC_API_KEY or self.LLM_API_KEY or "").strip()
+        elif provider == "groq":
+            api_key = (self.GROQ_API_KEY or self.LLM_API_KEY or "").strip()
+        elif provider == "openrouter":
+            api_key = (self.OPENROUTER_API_KEY or self.LLM_API_KEY or "").strip()
+        elif provider == "ollama":
+            api_key = None
+        else:
+            # Provider is not explicitly set; infer from keys present
+            if self.GOOGLE_API_KEY or self.GEMINI_API_KEY:
                 provider = "google"
-        elif self.ANTHROPIC_API_KEY:
-            api_key = self.ANTHROPIC_API_KEY.strip()
-            if not provider:
+                api_key = (self.GOOGLE_API_KEY or self.GEMINI_API_KEY).strip()
+            elif self.ANTHROPIC_API_KEY:
                 provider = "anthropic"
-        elif self.GROQ_API_KEY:
-            api_key = self.GROQ_API_KEY.strip()
-            if not provider:
+                api_key = self.ANTHROPIC_API_KEY.strip()
+            elif self.GROQ_API_KEY:
                 provider = "groq"
-        elif self.OPENROUTER_API_KEY:
-            api_key = self.OPENROUTER_API_KEY.strip()
-            if not provider:
+                api_key = self.GROQ_API_KEY.strip()
+            elif self.OPENROUTER_API_KEY:
                 provider = "openrouter"
-        elif self.OPENAI_API_KEY:
-            api_key = self.OPENAI_API_KEY.strip()
-            if not provider:
+                api_key = self.OPENROUTER_API_KEY.strip()
+            elif self.OPENAI_API_KEY:
                 provider = "openai"
-        elif self.LLM_API_KEY:
-            api_key = self.LLM_API_KEY.strip()
-
-        # 2. Key format signature detection
-        if api_key:
-            if api_key.startswith("AQ.") or api_key.startswith("AIza"):
-                provider = "google"
-            elif api_key.startswith("sk-ant-"):
-                provider = "anthropic"
-            elif api_key.startswith("gsk_"):
-                provider = "groq"
-            elif api_key.startswith("sk-or-"):
-                provider = "openrouter"
-            elif api_key.startswith("sk-") and provider not in ["openai", "openrouter", "groq"]:
+                api_key = self.OPENAI_API_KEY.strip()
+            elif self.LLM_API_KEY:
+                api_key = self.LLM_API_KEY.strip()
+                if api_key.startswith("AQ.") or api_key.startswith("AIza"):
+                    provider = "google"
+                elif api_key.startswith("sk-ant-"):
+                    provider = "anthropic"
+                elif api_key.startswith("gsk_"):
+                    provider = "groq"
+                elif api_key.startswith("sk-or-"):
+                    provider = "openrouter"
+                elif api_key.startswith("sk-"):
+                    provider = "openai"
+                else:
+                    provider = "openai"
+            else:
                 provider = "openai"
-
-        # 3. Default provider if none determined
-        if not provider:
-            provider = "google" if (api_key and (api_key.startswith("AQ.") or api_key.startswith("AIza"))) else "openai"
 
         # 4. Standard active models per provider
         provider_default_models = {

@@ -10,7 +10,7 @@ lsof -ti:5173 | xargs kill -9 2>/dev/null
 # Start backend
 echo "📦 Starting Backend (Port 8000)..."
 cd "$(dirname "$0")"
-python3 -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload > backend.log 2>&1 &
+python3 -m uvicorn app:app --host 0.0.0.0 --port 8000 --loop asyncio > backend.log 2>&1 &
 BACKEND_PID=$!
 echo $BACKEND_PID > .backend.pid
 

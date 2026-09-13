@@ -86,7 +86,9 @@ async def get_llm_configuration():
 
 
 @router.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+def chat(request: ChatRequest):
+    key_preview = f"{request.api_key[:6]}...({len(request.api_key)})" if request.api_key else "None"
+    logger.info(f"Incoming /chat: provider={request.provider}, model={request.model}, key={key_preview}, agent_mode={request.agent_mode}")
     try:
         session_id = request.session_id or str(uuid.uuid4())
 
@@ -276,37 +278,39 @@ async def code_critic(request: CodeCriticRequest):
 
 
 @router.get("/agents/status")
-async def agents_status():
+def agents_status():
     status = {}
 
     # Check Redis
     try:
         t0 = time.time()
         from memory.redis_memory import client as redis_client
-        redis_client.ping()
-        redis_latency = int((time.time() - t0) * 1000)
-        status["redis"] = {"status": "connected", "latency": redis_latency}
+        if redis_client and hasattr(redis_client, "ping"):
+            redis_client.ping()
+            redis_latency = int((time.time() - t0) * 1000)
+            status["redis"] = {"status": "connected", "latency": redis_latency}
+        else:
+            status["redis"] = {"status": "disconnected", "latency": 0}
     except Exception as e:
-        status["redis"] = {"status": "error", "latency": 0, "error": str(e)}
+        status["redis"] = {"status": "disconnected", "latency": 0, "error": str(e)}
 
     # Check Postgres
     try:
         t0 = time.time()
-        from memory.postgres_memory import get_connection
-        conn = get_connection()
-        conn.close()
+        from memory.postgres_memory import check_postgres_availability
+        is_pg_ok = check_postgres_availability()
         pg_latency = int((time.time() - t0) * 1000)
-        status["postgresql"] = {"status": "connected", "latency": pg_latency}
+        status["postgresql"] = {"status": "connected" if is_pg_ok else "error", "latency": pg_latency}
     except Exception as e:
         status["postgresql"] = {"status": "error", "latency": 0, "error": str(e)}
 
     # Check ChromaDB
     try:
         t0 = time.time()
-        # Perform a basic check
-        get_retriever(top_k=1)
+        import os
+        is_chroma_ready = os.path.exists(settings.CHROMA_PERSIST_DIR)
         chroma_latency = int((time.time() - t0) * 1000)
-        status["chromadb"] = {"status": "connected", "latency": chroma_latency}
+        status["chromadb"] = {"status": "connected" if is_chroma_ready else "idle", "latency": chroma_latency}
     except Exception as e:
         status["chromadb"] = {"status": "error", "latency": 0, "error": str(e)}
 
@@ -314,8 +318,8 @@ async def agents_status():
     if getattr(settings, "LLM_PROVIDER", "").lower() == "ollama":
         try:
             t0 = time.time()
-            async with httpx.AsyncClient() as client:
-                resp = await client.get("http://localhost:11434", timeout=0.5)
+            with httpx.Client(timeout=0.5) as client:
+                resp = client.get("http://localhost:11434")
                 ollama_latency = int((time.time() - t0) * 1000)
                 status["ollama"] = {"status": "connected" if resp.status_code == 200 else "disconnected", "latency": ollama_latency}
         except Exception:
@@ -459,10 +463,8 @@ async def google_auth(request: GoogleAuthRequest):
 
 @router.get("/config/auth")
 async def get_auth_config():
-    client_id = (settings.GOOGLE_CLIENT_ID or "").strip()
-    client_secret = (settings.GOOGLE_CLIENT_SECRET or settings.GOOGLE_CLIENT_SECRET_KEY or "").strip()
     return {
-        "google_client_id": client_id,
-        "google_client_secret": client_secret,
-        "has_google_auth": bool(client_id)
+        "google_client_id": "",
+        "google_client_secret": "",
+        "has_google_auth": False
     }

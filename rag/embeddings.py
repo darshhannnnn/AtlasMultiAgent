@@ -28,8 +28,14 @@ def get_embedding_provider_tag(provider: Optional[str] = None, api_key: Optional
     This guarantees that Chroma collections never encounter dimension mismatch errors.
     """
     cfg = settings.detect_llm_settings()
-    key = (api_key or cfg.get("api_key") or "").strip()
-    target_provider = (provider or cfg.get("provider") or "").strip().lower()
+    google_emb_key = (getattr(settings, "GOOGLE_EMBEDDING_API_KEY", None) or "").strip()
+
+    if not api_key and google_emb_key and (provider == "google" or provider is None):
+        key = google_emb_key
+        target_provider = "google"
+    else:
+        key = (api_key or cfg.get("api_key") or "").strip()
+        target_provider = (provider or cfg.get("provider") or "").strip().lower()
 
     if key.startswith("AQ.") or key.startswith("AIza"):
         return "google"
@@ -50,8 +56,14 @@ def get_embeddings(provider: Optional[str] = None, api_key: Optional[str] = None
     3. Chroma Built-in: Local ONNX all-MiniLM-L6-v2 (dim 384, offline)
     """
     cfg = settings.detect_llm_settings()
-    key = (api_key or cfg.get("api_key") or "").strip()
-    target_provider = (provider or cfg.get("provider") or "").strip().lower()
+    google_emb_key = (getattr(settings, "GOOGLE_EMBEDDING_API_KEY", None) or "").strip()
+
+    if not api_key and google_emb_key and (provider == "google" or provider is None):
+        key = google_emb_key
+        target_provider = "google"
+    else:
+        key = (api_key or cfg.get("api_key") or "").strip()
+        target_provider = (provider or cfg.get("provider") or "").strip().lower()
 
     # Detect provider by key signature if not explicitly set
     if key.startswith("AQ.") or key.startswith("AIza"):
@@ -65,7 +77,7 @@ def get_embeddings(provider: Optional[str] = None, api_key: Optional[str] = None
             logger.info("Initializing Google Generative AI Embeddings (models/gemini-embedding-001)")
             return GoogleGenerativeAIEmbeddings(
                 model="models/gemini-embedding-001",
-                google_api_key=key
+                google_api_key=key,
             )
         except Exception as e:
             logger.warning(f"Google embeddings initialization failed: {e}. Falling back to local ONNX embeddings.")

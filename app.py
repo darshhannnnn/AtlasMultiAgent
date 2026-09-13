@@ -1,8 +1,19 @@
+import os
+os.environ["GRPC_ENABLE_FORK_SUPPORT"] = "0"
+
 import logging
+import faulthandler
+import signal
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes import router
 from config.settings import settings
+
+faulthandler.enable()
+try:
+    faulthandler.register(signal.SIGUSR1)
+except Exception:
+    pass
 
 # Logging
 logging.basicConfig(

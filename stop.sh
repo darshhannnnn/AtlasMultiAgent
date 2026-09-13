@@ -21,7 +21,7 @@ lsof -ti:8000 | xargs kill -9 2>/dev/null && echo "✓ Port 8000 freed"
 lsof -ti:5173 | xargs kill -9 2>/dev/null && echo "✓ Port 5173 freed"
 
 # Kill any remaining node/python processes related to the project
-pkill -f "uvicorn app:app" 2>/dev/null
+pkill -f "uvicorn" 2>/dev/null
 pkill -f "vite.*5173" 2>/dev/null
 
 echo ""

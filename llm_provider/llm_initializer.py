@@ -37,9 +37,11 @@ ACTIVE_MODELS_MAP = {
         }
     },
     "groq": {
-        "default": "llama-3.1-8b-instant",
+        "default": "openai/gpt-oss-20b",
         "deprecated": {
-            "llama3-8b-8192": "llama-3.1-8b-instant",
+            "llama3-8b-8192": "openai/gpt-oss-20b",
+            "llama-3.1-8b-instant": "openai/gpt-oss-20b",
+            "llama-3.3-70b-versatile": "openai/gpt-oss-120b",
         }
     },
     "openrouter": {
@@ -65,7 +67,7 @@ def is_model_compatible_with_provider(provider: str, model_name: str) -> bool:
     if provider == "anthropic":
         return "claude" in m
     if provider == "groq":
-        return "llama" in m or "mixtral" in m or "gemma" in m
+        return "llama" in m or "mixtral" in m or "gemma" in m or "gpt-oss" in m
     return True
 
 
@@ -91,28 +93,29 @@ def resolve_llm_config(
     req_model = model.strip() if (model and model.strip()) else None
 
     # Determine provider & API key
-    if req_api_key:
-        if req_api_key.startswith("AQ.") or req_api_key.startswith("AIza"):
+    resolved_provider = req_provider or base_config["provider"]
+    resolved_key = req_api_key or base_config.get("api_key")
+
+    # Fallback key inference ONLY if resolved_provider is somehow still undetermined
+    if not resolved_provider and resolved_key:
+        if resolved_key.startswith("AQ.") or resolved_key.startswith("AIza"):
             resolved_provider = "google"
-        elif req_api_key.startswith("sk-ant-"):
+        elif resolved_key.startswith("sk-ant-"):
             resolved_provider = "anthropic"
-        elif req_api_key.startswith("gsk_"):
+        elif resolved_key.startswith("gsk_"):
             resolved_provider = "groq"
-        elif req_api_key.startswith("sk-or-"):
+        elif resolved_key.startswith("sk-or-"):
             resolved_provider = "openrouter"
-        elif req_api_key.startswith("sk-"):
+        elif resolved_key.startswith("sk-"):
             resolved_provider = "openai"
         else:
-            resolved_provider = req_provider or base_config["provider"]
-        resolved_key = req_api_key
-    else:
-        # No custom API key provided from frontend:
-        # If client sent "openai" (frontend default) but .env has another provider configured, use .env!
-        if req_provider and req_provider != "openai" and req_provider != base_config["provider"]:
-            resolved_provider = req_provider
-        else:
-            resolved_provider = base_config["provider"]
-        resolved_key = base_config.get("api_key")
+            resolved_provider = "openai"
+
+    # If google provider is used with a custom key that does not look like a Gemini key, fallback to .env key
+    if resolved_provider == "google" and req_api_key and not (req_api_key.startswith("AQ.") or req_api_key.startswith("AIza")):
+        if base_config.get("api_key") and (base_config.get("api_key").startswith("AQ.") or base_config.get("api_key").startswith("AIza")):
+            logger.warning("Custom key for Google does not look like a Gemini key. Falling back to .env key.")
+            resolved_key = base_config.get("api_key")
 
     # Resolve model name with strict compatibility check
     provider_info = ACTIVE_MODELS_MAP.get(resolved_provider, {})

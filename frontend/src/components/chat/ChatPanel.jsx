@@ -37,6 +37,16 @@ export const ChatPanel = () => {
 
   const threadEndRef = useRef(null);
   const sendBtnRef = useRef(null);
+  const activeControllerRef = useRef(null);
+
+  const handleCancel = () => {
+    if (activeControllerRef.current) {
+      activeControllerRef.current.abort();
+      activeControllerRef.current = null;
+    }
+    setIsLoading(false);
+    clearActiveNodes();
+  };
 
   // Load chats on component mount
   useEffect(() => {
@@ -119,33 +129,47 @@ export const ChatPanel = () => {
         });
       } else {
         const cleanApiKey = apiKey && apiKey.trim() ? apiKey.trim() : null;
-        const response = await fetch('http://localhost:8000/api/v1/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            message: userMessage,
-            session_id: activeChat.id,
-            provider: activeProvider,
+        const controller = new AbortController();
+        activeControllerRef.current = controller;
+        const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+        try {
+          const response = await fetch('http://localhost:8000/api/v1/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: controller.signal,
+            body: JSON.stringify({
+              message: userMessage,
+              session_id: activeChat.id,
+              provider: activeProvider,
+              model: modelName,
+              agent_mode: agentMode,
+              api_key: cleanApiKey
+            })
+          });
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData.detail || 'Backend failed to process response.');
+          }
+          const data = await response.json();
+          const latency = ((performance.now() - t0) / 1000).toFixed(2);
+
+          addMessageToActiveChat({
+            role: 'assistant',
+            content: data.response,
             model: modelName,
-            agent_mode: agentMode,
-            api_key: cleanApiKey
-          })
-        });
-
-        if (!response.ok) {
-          const errData = await response.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Backend failed to process response.');
+            tokens: Math.round(data.response.length / 4),
+            latency: parseFloat(latency)
+          });
+        } catch (fetchErr) {
+          clearTimeout(timeoutId);
+          if (fetchErr.name === 'AbortError') {
+            throw new Error('Chat request timed out after 45 seconds. Please try again or click Cancel.');
+          }
+          throw fetchErr;
         }
-        const data = await response.json();
-        const latency = ((performance.now() - t0) / 1000).toFixed(2);
-
-        addMessageToActiveChat({
-          role: 'assistant',
-          content: data.response,
-          model: modelName,
-          tokens: Math.round(data.response.length / 4),
-          latency: parseFloat(latency)
-        });
       }
     } catch (err) {
       console.error(err);
@@ -157,6 +181,7 @@ export const ChatPanel = () => {
         latency: 0
       });
     } finally {
+      activeControllerRef.current = null;
       setIsLoading(false);
       setTimeout(() => {
         clearActiveNodes();
@@ -284,6 +309,13 @@ export const ChatPanel = () => {
               <div className="flex items-center gap-2 text-xs text-stone-400 font-mono pl-2">
                 <Sparkles className="h-4 w-4 text-beige-600 animate-spin" />
                 <span>Agents thinking...</span>
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="text-[11px] font-sans text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-md ml-2 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
               </div>
             )}
             <div ref={threadEndRef} />

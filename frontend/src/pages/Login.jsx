@@ -74,27 +74,6 @@ export const Login = () => {
   );
   const [showConfig, setShowConfig] = useState(false);
 
-  // Auto-fetch credentials from backend .env if not locally present
-  useEffect(() => {
-    fetch('http://localhost:8000/api/v1/config/auth')
-      .then(res => res.json())
-      .then(data => {
-        if (data.google_client_id) {
-          setGoogleClientId(prev => prev || data.google_client_id);
-          if (!localStorage.getItem('nass_google_client_id')) {
-            localStorage.setItem('nass_google_client_id', data.google_client_id);
-          }
-        }
-        if (data.google_client_secret) {
-          setGoogleClientSecret(prev => prev || data.google_client_secret);
-          if (!localStorage.getItem('nass_google_client_secret')) {
-            localStorage.setItem('nass_google_client_secret', data.google_client_secret);
-          }
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   // Check URL query parameters for auth code on mount (PKCE redirect callback)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -171,9 +150,46 @@ export const Login = () => {
     // Persist configured client ID
     localStorage.setItem('nass_google_client_id', googleClientId.trim());
     localStorage.setItem('nass_google_client_secret', googleClientSecret.trim());
-    // Store secret in sessionStorage so it's available after redirect
     sessionStorage.setItem('google_oauth_client_secret', googleClientSecret.trim());
 
+    // 1. Prefer Google Identity Services (GIS) popup flow (does not suffer from redirect_uri mismatch)
+    if (window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: googleClientId.trim(),
+          scope: 'openid profile email',
+          callback: async (tokenResponse) => {
+            if (tokenResponse.error) {
+              setError(`Google Sign-In: ${tokenResponse.error_description || tokenResponse.error}`);
+              return;
+            }
+            try {
+              setIsLoading(true);
+              const userInfoRes = await fetch(
+                `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${tokenResponse.access_token}`
+              );
+              if (!userInfoRes.ok) throw new Error('Failed to retrieve user profile from Google');
+              const data = await userInfoRes.json();
+              await loginWithGoogle({
+                email: data.email.trim().toLowerCase(),
+                name: data.name || 'Google User',
+                picture: data.picture || ''
+              });
+            } catch (err) {
+              setError(`Google login failed: ${err.message}`);
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        });
+        tokenClient.requestAccessToken({ prompt: 'consent' });
+        return;
+      } catch (err) {
+        console.warn('GIS popup initialization failed, falling back to redirect:', err);
+      }
+    }
+
+    // 2. Fallback: Standard OAuth redirect flow
     try {
       // Generate PKCE code verifier and challenge
       const verifier = generateRandomString(64);

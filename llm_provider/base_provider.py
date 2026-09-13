@@ -85,3 +85,42 @@ class BaseLLMProvider(ABC):
         """Update configuration parameters."""
         self.config.update(kwargs)
         self._model = None  # Reset model instance when config changes
+
+    def post_request(
+        self,
+        url: str,
+        payload: Dict[str, Any],
+        headers: Optional[Dict[str, str]] = None,
+        **kwargs
+    ) -> Any:
+        """
+        Execute an HTTP POST request to an LLM endpoint.
+        Safely handles provider-specific authentication:
+        - If the target URL points to generativelanguage.googleapis.com, NEVER sets an
+          Authorization header; passes the key strictly as a URL query parameter:
+          requests.post(url, params={"key": api_key}, ...)
+        - For other providers, uses standard Authorization: Bearer header.
+        """
+        import requests
+        api_key = self.config.get("api_key") or self.config.get("google_api_key") or self.config.get("openai_api_key")
+        clean_headers = dict(headers or {})
+
+        # Google Gemini / Generative Language API path
+        if "generativelanguage.googleapis.com" in url:
+            # Strip ANY Authorization header completely - Google Generative Language rejects 'Bearer <key>' with 401
+            clean_headers.pop("Authorization", None)
+            clean_headers.pop("authorization", None)
+            clean_headers.setdefault("Content-Type", "application/json")
+
+            params = kwargs.pop("params", {})
+            if api_key:
+                params["key"] = api_key
+
+            return requests.post(url, params=params, json=payload, headers=clean_headers, **kwargs)
+
+        # Other standard providers (OpenAI, Anthropic, Groq, OpenRouter)
+        if api_key and "Authorization" not in clean_headers and "authorization" not in clean_headers:
+            clean_headers["Authorization"] = f"Bearer {api_key}"
+        clean_headers.setdefault("Content-Type", "application/json")
+
+        return requests.post(url, json=payload, headers=clean_headers, **kwargs)
