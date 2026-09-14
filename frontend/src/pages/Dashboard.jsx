@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/layout/Sidebar';
 import Topbar from '../components/layout/Topbar';
 import SectionWrapper from '../components/layout/SectionWrapper';
@@ -11,7 +12,8 @@ import { useAppStore } from '../store/useAppStore';
 import { useAgentStatus } from '../hooks/useAgentStatus';
 
 export const Dashboard = () => {
-  const { activeSection } = useAppStore();
+  const location = useLocation();
+  const activeSection = location.pathname.replace('/', '') || 'chat';
   const [showTopology, setShowTopology] = useState(true);
 
   // Initialize status polling from FastAPI backend

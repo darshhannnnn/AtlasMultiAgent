@@ -1,57 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Mail, Lock, Eye, EyeOff, LogIn, Sparkles, Shield, Zap, User } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
 import PulseOrb from '../components/ui/PulseOrb';
 import { useAppStore } from '../store/useAppStore';
 
-// PKCE Helpers for Google OAuth 2.0 Web Application Flow
+const floatingVariants = {
+  animate: (i) => ({
+    y: i % 2 === 0 ? [-8, 8, -8] : [8, -8, 8],
+    rotate: i % 2 === 0 ? [-1, 1, -1] : [1, -1, 1],
+    transition: {
+      duration: 6 + i,
+      repeat: Infinity,
+      ease: 'easeInOut'
+    }
+  })
+};
+
+// Cryptographic helpers for PKCE (RFC 7636)
 const generateRandomString = (length) => {
-  const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-  let text = '';
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+  let result = '';
+  const values = new Uint8Array(length);
+  window.crypto.getRandomValues(values);
   for (let i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+    result += charset[values[i] % charset.length];
   }
-  return text;
+  return result;
+};
+
+const sha256 = async (plain) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(plain);
+  return window.crypto.subtle.digest('SHA-256', data);
 };
 
 const base64urlencode = (buffer) => {
+  let binary = '';
   const bytes = new Uint8Array(buffer);
-  let str = "";
-  for (let i = 0; i < bytes.byteLength; i++) {
-    str += String.fromCharCode(bytes[i]);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
   }
-  return btoa(str)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 };
 
 const generateChallengeOfVerifier = async (verifier) => {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hashed = await window.crypto.subtle.digest('SHA-256', data);
+  const hashed = await sha256(verifier);
   return base64urlencode(hashed);
 };
 
-const floatingVariants = {
-  animate: (i) => ({
-    y: [0, -12, 0],
-    transition: {
-      duration: 4 + i * 0.6,
-      repeat: Infinity,
-      ease: 'easeInOut',
-    },
-  }),
-};
-
 const featureCards = [
-  { icon: Sparkles, label: 'Multi-Agent', desc: 'Orchestrated AI workflows' },
+  { icon: Sparkles, label: 'Multi-Agent', desc: 'Collaborative autonomous nodes' },
   { icon: Shield, label: 'Secure', desc: 'Encrypted session storage' },
   { icon: Zap, label: 'Real-time', desc: 'Live agent topology map' },
 ];
 
 export const Login = () => {
+  const navigate = useNavigate();
   const login = useAppStore((s) => s.login);
   const loginWithGoogle = useAppStore((s) => s.loginWithGoogle);
   const signup = useAppStore((s) => s.signup);
@@ -131,6 +141,7 @@ export const Login = () => {
           window.history.replaceState(null, null, window.location.pathname);
           sessionStorage.removeItem('google_oauth_code_verifier');
           sessionStorage.removeItem('google_oauth_client_secret');
+          navigate('/chat');
         })
         .catch((err) => {
           setError(`Google login failed: ${err.message}`);
@@ -139,7 +150,7 @@ export const Login = () => {
           setIsLoading(false);
         });
     }
-  }, [loginWithGoogle, googleClientId, googleClientSecret]);
+  }, [loginWithGoogle, googleClientId, googleClientSecret, navigate]);
 
   const handleGoogleLogin = async () => {
     if (!googleClientId.trim()) {
@@ -175,6 +186,7 @@ export const Login = () => {
                 name: data.name || 'Google User',
                 picture: data.picture || ''
               });
+              navigate('/chat');
             } catch (err) {
               setError(`Google login failed: ${err.message}`);
             } finally {
@@ -221,6 +233,8 @@ export const Login = () => {
       if (!res.success) {
         setError(res.error || 'Registration failed.');
         setIsLoading(false);
+      } else {
+        navigate('/chat');
       }
     } else {
       if (!email.trim() || !password.trim()) {
@@ -232,6 +246,8 @@ export const Login = () => {
       if (!res.success) {
         setError(res.error || 'Invalid credentials.');
         setIsLoading(false);
+      } else {
+        navigate('/chat');
       }
     }
   };
@@ -459,6 +475,7 @@ export const Login = () => {
                 onClick={() => {
                   // Skip authentication and continue as guest
                   useAppStore.getState().loginAsGuest();
+                  navigate('/chat');
                 }}
                 className="flex items-center justify-center gap-2.5 w-full py-2.5 mt-1 rounded-xl border border-stone-200/60 dark:border-stone-700 bg-white/40 dark:bg-stone-800/40 hover:bg-white/60 dark:hover:bg-stone-800/70 text-stone-600 dark:text-stone-300 font-medium text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.01)] cursor-pointer backdrop-blur-sm"
               >

@@ -1,9 +1,13 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppStore } from '../../store/useAppStore';
 import { MessageSquare, Database, Mail, Cpu, LogOut, Code } from 'lucide-react';
 
 export const Sidebar = () => {
-  const { activeSection, setActiveSection, user, logout } = useAppStore();
+  const { user, logout } = useAppStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const activeSection = location.pathname.replace('/', '') || 'chat';
 
   const menuItems = [
     { id: 'chat', label: 'Chat Orchestrator', icon: MessageSquare },
@@ -28,7 +32,7 @@ export const Sidebar = () => {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => navigate(`/${item.id}`)}
               title={item.label}
               className={`relative group w-full py-4 flex flex-col items-center justify-center gap-1.5 rounded-2xl transition-all duration-300 ${
                 isActive

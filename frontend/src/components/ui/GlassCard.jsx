@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
+import { useThemeStore } from '../../store/useThemeStore';
 
 export const GlassCard = ({ children, className = '', contentClassName = '', ...props }) => {
+  const { theme } = useThemeStore();
   const cardRef = useRef(null);
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -33,7 +35,9 @@ export const GlassCard = ({ children, className = '', contentClassName = '', ...
           style={{
             width: '280px',
             height: '280px',
-            background: 'radial-gradient(circle, rgba(232, 223, 208, 0.35) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(0, 0, 0, 0) 70%)',
+            background: theme === 'dark'
+              ? 'radial-gradient(circle, rgba(120, 108, 90, 0.25) 0%, rgba(80, 72, 60, 0.1) 45%, rgba(0, 0, 0, 0) 70%)'
+              : 'radial-gradient(circle, rgba(232, 223, 208, 0.35) 0%, rgba(255, 255, 255, 0.12) 45%, rgba(0, 0, 0, 0) 70%)',
             transform: 'translate(-50%, -50%)',
             left: `${coords.x}px`,
             top: `${coords.y}px`,
