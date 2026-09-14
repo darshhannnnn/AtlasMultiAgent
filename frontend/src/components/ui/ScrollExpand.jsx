@@ -33,6 +33,10 @@ const ScrollExpand = ({
   children,
   className = '',
   style,
+  onMouseMove,
+  onMouseLeave,
+  onOverlayMouseMove,
+  onOverlayMouseLeave,
   ...rest
 }) => {
   const rootRef = useRef(null);
@@ -251,7 +255,12 @@ const ScrollExpand = ({
             {media}
             <div ref={scrimRef} className="scroll-expand__scrim" />
             {children ? (
-              <div ref={overlayRef} className="scroll-expand__overlay">
+              <div 
+                ref={overlayRef} 
+                className="scroll-expand__overlay"
+                onMouseMove={onOverlayMouseMove || onMouseMove}
+                onMouseLeave={onOverlayMouseLeave || onMouseLeave}
+              >
                 {children}
               </div>
             ) : null}

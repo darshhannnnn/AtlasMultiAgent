@@ -63,6 +63,13 @@ const featureCards = [
   { icon: Zap, label: 'Real-time', desc: 'Live agent topology map' },
 ];
 
+const featureChips = [
+  'Chat',
+  'Document Intelligence',
+  'Email Triage',
+  'Code Generation'
+];
+
 export const Login = () => {
   const navigate = useNavigate();
   const login = useAppStore((s) => s.login);
@@ -87,6 +94,22 @@ export const Login = () => {
     localStorage.getItem('atlas_google_client_secret') || import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
   );
   const [showConfig, setShowConfig] = useState(false);
+  const cardGlowRef = useRef(null);
+
+  const handleCardMouseMove = (e) => {
+    if (!cardGlowRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    cardGlowRef.current.style.setProperty('--x', `${x}px`);
+    cardGlowRef.current.style.setProperty('--y', `${y}px`);
+    cardGlowRef.current.style.opacity = '1';
+  };
+
+  const handleCardMouseLeave = () => {
+    if (!cardGlowRef.current) return;
+    cardGlowRef.current.style.opacity = '0';
+  };
 
   // Check URL query parameters for auth code on mount (PKCE redirect callback)
   useEffect(() => {
@@ -341,15 +364,51 @@ export const Login = () => {
           holdDistance={0.2}
           useWindowScroll
           lockExpanded={showLoginForm}
+          onMouseMove={handleCardMouseMove}
+          onMouseLeave={handleCardMouseLeave}
         >
-          <h2 className="text-2xl md:text-4xl font-extrabold text-white mb-3">
+          {/* Subtle dot-grid texture layered behind text content with idle ambient pulse */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-0 scroll-expand__dot-grid-animated"
+            style={{
+              backgroundImage: 'radial-gradient(rgba(232, 223, 208, 0.3) 1.2px, transparent 1.2px)',
+              backgroundSize: '24px 24px',
+              backgroundPosition: 'center',
+              maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0.5) 80%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0.5) 80%, transparent 100%)',
+            }}
+          />
+
+          {/* Mouse-following radial glow spotlight */}
+          <div 
+            ref={cardGlowRef}
+            className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 z-[1]"
+            style={{
+              background: 'radial-gradient(circle 320px at var(--x, 50%) var(--y, 50%), rgba(232, 223, 208, 0.28) 0%, rgba(210, 195, 175, 0.12) 40%, transparent 70%)',
+            }}
+          />
+
+          <h2 className="relative z-10 text-2xl md:text-4xl font-extrabold text-white mb-3">
             Multi-Agent Orchestration, Simplified
           </h2>
-          <p className="text-sm md:text-base text-white/80 max-w-xl mb-6 leading-relaxed">
+          <p className="relative z-10 text-sm md:text-base text-white/80 max-w-xl mb-5 leading-relaxed">
             Atlas coordinates chat, document intelligence, email triage, and code 
             generation through a single agent workspace — built for speed, clarity, 
             and control.
           </p>
+
+          {/* Feature chips row */}
+          <div className="relative z-10 flex flex-wrap items-center justify-center gap-2 md:gap-2.5 max-w-lg mb-6">
+            {featureChips.map((chip) => (
+              <span
+                key={chip}
+                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/[0.18] border border-white/20 hover:border-white/45 text-white/90 hover:text-white text-xs font-medium tracking-wide shadow-sm hover:shadow-[0_0_12px_rgba(232,223,208,0.35)] transition-all duration-200 ease-out select-none cursor-default"
+              >
+                {chip}
+              </span>
+            ))}
+          </div>
+
           <button
             type="button"
             onClick={() => {
@@ -359,7 +418,7 @@ export const Login = () => {
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }, 50);
             }}
-            className="px-6 py-3 rounded-xl bg-white text-stone-900 font-semibold text-sm hover:bg-white/90 transition-colors cursor-pointer"
+            className="relative z-10 px-6 py-3 rounded-xl bg-white text-stone-900 font-semibold text-sm hover:bg-white/90 transition-colors cursor-pointer"
           >
             Click here for Login
           </button>

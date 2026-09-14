@@ -100,3 +100,18 @@
   pointer-events: none;
   will-change: opacity, transform;
 }
+
+@keyframes dotGridPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+.scroll-expand__dot-grid-animated {
+  animation: dotGridPulse 7s ease-in-out infinite;
+  will-change: opacity;
+}
+
