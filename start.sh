@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting Nass Agent System..."
+echo "🚀 Starting Atlas Agent System..."
 echo ""
 
 # Kill any existing processes on these ports

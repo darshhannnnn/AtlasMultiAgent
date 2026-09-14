@@ -22,9 +22,9 @@ export const PulseOrb = ({ status = 'idle', className = '' }) => {
       case 'idle':
       default:
         return {
-          bg: 'bg-beige-400',
-          shadow: 'shadow-beige-400/50',
-          ping: 'bg-beige-300',
+          bg: 'bg-beige-400 dark:bg-stone-400',
+          shadow: 'shadow-beige-400/50 dark:shadow-stone-500/50',
+          ping: 'bg-beige-300 dark:bg-stone-400',
         };
     }
   };

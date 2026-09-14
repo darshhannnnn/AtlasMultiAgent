@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { useLiquidCursor } from '../../hooks/useLiquidCursor';
+import { useThemeStore } from '../../store/useThemeStore';
 import vertexShader from '../../shaders/liquidVertex.glsl?raw';
 import fragmentShader from '../../shaders/liquidFragment.glsl?raw';
 
@@ -8,9 +9,15 @@ export const LiquidCursor = () => {
   const shaderRef = useRef(null);
   const blobsRef = useRef(null);
   const { update } = useLiquidCursor();
+  const { theme } = useThemeStore();
 
   useEffect(() => {
     if (!shaderRef.current || !blobsRef.current) return;
+
+    const isDark = theme === 'dark';
+    const colorSet = isDark 
+      ? { c1: '#2a2724', c2: '#3d3833', c3: '#1c1917', blob: '#292521', fill: 0x3d3833 }
+      : { c1: '#FDFCFA', c2: '#E8DFD0', c3: '#FFFFFF', blob: '#F5F2EB', fill: 0xE8DFD0 };
 
     const w = window.innerWidth;
     const h = window.innerHeight;
@@ -40,9 +47,9 @@ export const LiquidCursor = () => {
         u_resolution: { value: new THREE.Vector2(w, h) },
         u_time: { value: 0 },
         u_velocity: { value: new THREE.Vector2(0, 0) },
-        u_color1: { value: new THREE.Color('#FDFCFA') },
-        u_color2: { value: new THREE.Color('#E8DFD0') },
-        u_color3: { value: new THREE.Color('#FFFFFF') },
+        u_color1: { value: new THREE.Color(colorSet.c1) },
+        u_color2: { value: new THREE.Color(colorSet.c2) },
+        u_color3: { value: new THREE.Color(colorSet.c3) },
       },
       transparent: true,
       depthTest: false,
@@ -71,7 +78,7 @@ export const LiquidCursor = () => {
       const size = 0.22 + i * 0.06;
       const geometry = new THREE.IcosahedronGeometry(size, 4);
       const material = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color('#F5F2EB'),
+        color: new THREE.Color(colorSet.blob),
         metalness: 0.05,
         roughness: 0.08,
         transmission: 0.92,
@@ -89,7 +96,7 @@ export const LiquidCursor = () => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(2, 3, 5);
-    const fillLight = new THREE.DirectionalLight(0xE8DFD0, 0.5);
+    const fillLight = new THREE.DirectionalLight(colorSet.fill, 0.5);
     fillLight.position.set(-3, -1, 2);
     blobScene.add(ambientLight, dirLight, fillLight);
 
@@ -156,7 +163,7 @@ export const LiquidCursor = () => {
       shaderRenderer.dispose();
       blobRenderer.dispose();
     };
-  }, [update]);
+  }, [update, theme]);
 
   return (
     <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
-const DEMO_EMAIL = 'admin@nass.ai';
-const DEMO_PASSWORD = 'nass2024';
+const DEMO_EMAIL = 'admin@atlas.ai';
+const DEMO_PASSWORD = 'atlas2024';
 
 // Helper to get api keys from localStorage
 const getStoredKey = (provider) => {
@@ -30,7 +30,7 @@ const storeKey = (provider, key) => {
 
 const getStoredUser = () => {
   try {
-    const raw = localStorage.getItem('nass_auth_user');
+    const raw = localStorage.getItem('atlas_auth_user');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -39,9 +39,9 @@ const getStoredUser = () => {
 
 const storeUser = (user) => {
   if (user) {
-    localStorage.setItem('nass_auth_user', JSON.stringify(user));
+    localStorage.setItem('atlas_auth_user', JSON.stringify(user));
   } else {
-    localStorage.removeItem('nass_auth_user');
+    localStorage.removeItem('atlas_auth_user');
   }
 };
 

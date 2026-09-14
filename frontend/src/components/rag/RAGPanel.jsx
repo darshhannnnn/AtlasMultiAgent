@@ -89,8 +89,8 @@ export const RAGPanel = () => {
         
         {/* Upload Zone */}
         <GlassCard className="p-5! rounded-2xl">
-          <div className="flex items-center gap-2 mb-4 text-xs font-bold text-stone-500 tracking-wider uppercase font-mono">
-            <Database className="h-4 w-4 text-beige-600" />
+          <div className="flex items-center gap-2 mb-4 text-xs font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono">
+            <Database className="h-4 w-4 text-beige-600 dark:text-beige-400" />
             <span>Document Ingestion</span>
           </div>
           <DocumentUpload onUploadSuccess={() => {}} />
@@ -98,8 +98,8 @@ export const RAGPanel = () => {
 
         {/* Query Console */}
         <GlassCard className="p-5! rounded-2xl flex-1 flex flex-col">
-          <div className="flex items-center gap-2 mb-4 text-xs font-bold text-stone-500 tracking-wider uppercase font-mono">
-            <Search className="h-4 w-4 text-beige-600" />
+          <div className="flex items-center gap-2 mb-4 text-xs font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono">
+            <Search className="h-4 w-4 text-beige-600 dark:text-beige-400" />
             <span>Query Knowledge Base</span>
           </div>
 
@@ -112,7 +112,7 @@ export const RAGPanel = () => {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search matching document chunks..."
-                className="w-full bg-white/40 border border-white/50 backdrop-blur-md rounded-xl pl-5 pr-12 py-3 text-xs text-stone-800 focus:outline-none focus:border-beige-400 font-sans"
+                className="w-full bg-white/40 dark:bg-stone-800/40 border border-white/50 dark:border-stone-700 backdrop-blur-md rounded-xl pl-5 pr-12 py-3 text-xs text-stone-800 dark:text-stone-200 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-sans placeholder-stone-400 dark:placeholder-stone-500"
               />
               <button
                 type="submit"
@@ -126,48 +126,48 @@ export const RAGPanel = () => {
             {/* Custom per-query model & config selectors */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">Provider</label>
+                <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">Provider</label>
                 <div className="relative flex items-center">
                   <select
                     value={localProvider}
                     onChange={(e) => handleProviderChange(e.target.value)}
-                    className="w-full bg-white/40 border border-white/50 backdrop-blur-md text-stone-800 text-[11px] rounded-lg pl-2 pr-7 py-1.5 focus:outline-none focus:border-beige-400 cursor-pointer appearance-none"
+                    className="w-full bg-white/40 dark:bg-stone-800/40 border border-white/50 dark:border-stone-700 backdrop-blur-md text-stone-800 dark:text-stone-200 text-[11px] rounded-lg pl-2 pr-7 py-1.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 cursor-pointer appearance-none"
                   >
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic</option>
-                    <option value="google">Google Gemini</option>
-                    <option value="groq">Groq</option>
-                    <option value="openrouter">OpenRouter</option>
-                    <option value="ollama">Ollama (Local)</option>
+                    <option value="openai" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">OpenAI</option>
+                    <option value="anthropic" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">Anthropic</option>
+                    <option value="google" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">Google Gemini</option>
+                    <option value="groq" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">Groq</option>
+                    <option value="openrouter" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">OpenRouter</option>
+                    <option value="ollama" className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">Ollama (Local)</option>
                   </select>
-                  <ChevronDown className="absolute right-2 h-3 w-3 text-stone-500 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 h-3 w-3 text-stone-500 dark:text-stone-400 pointer-events-none" />
                 </div>
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">Model Name</label>
+                <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">Model Name</label>
                 <input
                   type="text"
                   value={localModel}
                   onChange={(e) => setLocalModel(e.target.value)}
-                  className="bg-white/40 border border-white/50 backdrop-blur-md text-stone-800 text-[11px] rounded-lg px-2 py-1.5 focus:outline-none focus:border-beige-400 font-mono"
+                  className="bg-white/40 dark:bg-stone-800/40 border border-white/50 dark:border-stone-700 backdrop-blur-md text-stone-800 dark:text-stone-200 text-[11px] rounded-lg px-2 py-1.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono"
                 />
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">Top-k Chunks</label>
+                <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">Top-k Chunks</label>
                 <div className="relative flex items-center">
                   <select
                     value={topK}
                     onChange={(e) => setTopK(e.target.value)}
-                    className="w-full bg-white/40 border border-white/50 backdrop-blur-md text-stone-800 text-[11px] rounded-lg pl-2 pr-7 py-1.5 focus:outline-none focus:border-beige-400 cursor-pointer appearance-none"
+                    className="w-full bg-white/40 dark:bg-stone-800/40 border border-white/50 dark:border-stone-700 backdrop-blur-md text-stone-800 dark:text-stone-200 text-[11px] rounded-lg pl-2 pr-7 py-1.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 cursor-pointer appearance-none"
                   >
-                    <option value={2}>2 Chunks</option>
-                    <option value={4}>4 Chunks</option>
-                    <option value={6}>6 Chunks</option>
-                    <option value={8}>8 Chunks</option>
+                    <option value={2} className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">2 Chunks</option>
+                    <option value={4} className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">4 Chunks</option>
+                    <option value={6} className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">6 Chunks</option>
+                    <option value={8} className="bg-white dark:bg-stone-800 text-stone-800 dark:text-stone-200">8 Chunks</option>
                   </select>
-                  <ChevronDown className="absolute right-2 h-3 w-3 text-stone-500 pointer-events-none" />
+                  <ChevronDown className="absolute right-2 h-3 w-3 text-stone-500 dark:text-stone-400 pointer-events-none" />
                 </div>
               </div>
             </div>
@@ -175,20 +175,20 @@ export const RAGPanel = () => {
 
           {/* Answer Display */}
           <div className="flex-1 flex flex-col">
-            <div className="text-[11px] font-bold text-stone-500 tracking-wider uppercase font-mono mb-2 flex items-center gap-1.5">
-              <BookOpen className="h-3.5 w-3.5 text-beige-600" />
+            <div className="text-[11px] font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono mb-2 flex items-center gap-1.5">
+              <BookOpen className="h-3.5 w-3.5 text-beige-600 dark:text-beige-400" />
               <span>LLM Generated Response</span>
             </div>
-            <div className="flex-1 bg-stone-50 border border-stone-200 rounded-xl p-4 overflow-y-auto text-xs text-stone-800 leading-relaxed font-sans select-text">
+            <div className="flex-1 bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-700 rounded-xl p-4 overflow-y-auto text-xs text-stone-800 dark:text-stone-200 leading-relaxed font-sans select-text">
               {isLoading ? (
-                <div className="flex items-center gap-2 text-stone-400 italic">
+                <div className="flex items-center gap-2 text-stone-400 dark:text-stone-500 italic">
                   <Sparkles className="h-3.5 w-3.5 animate-spin" />
                   <span>Synthesizing retrieval answer...</span>
                 </div>
               ) : answer ? (
                 <MarkdownFormatter text={answer} />
               ) : (
-                <span className="text-stone-400 italic">Submit a search query above to synthesize answers from indexed contexts.</span>
+                <span className="text-stone-400 dark:text-stone-500 italic">Submit a search query above to synthesize answers from indexed contexts.</span>
               )}
             </div>
           </div>

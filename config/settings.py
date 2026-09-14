@@ -7,7 +7,7 @@ ENV_PATH = Path(__file__).resolve().parent.parent / ".env"
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "Nass Agent"
+    APP_NAME: str = "Atlas Agent"
     DEBUG: bool = False
 
     # LLM - Universal multi-provider configuration

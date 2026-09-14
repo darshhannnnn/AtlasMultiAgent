@@ -1,8 +1,9 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 import { useAgentStore } from '../../store/useAgentStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import NodeCard from './NodeCard';
 import EdgeBeam from './EdgeBeam';
 import GlassCard from '../ui/GlassCard';
@@ -40,11 +41,19 @@ const CONNECTIONS = [
 // WebGL Liquid Shader Background
 const BackgroundShader = () => {
   const meshRef = useRef();
+  const { theme } = useThemeStore();
 
   const uniforms = useMemo(() => ({
     u_time: { value: 0 },
-    u_mouse: { value: new THREE.Vector2(0.5, 0.5) }
-  }), []);
+    u_mouse: { value: new THREE.Vector2(0.5, 0.5) },
+    u_isDark: { value: theme === 'dark' ? 1.0 : 0.0 }
+  }), [theme]);
+
+  useEffect(() => {
+    if (meshRef.current?.material?.uniforms?.u_isDark) {
+      meshRef.current.material.uniforms.u_isDark.value = theme === 'dark' ? 1.0 : 0.0;
+    }
+  }, [theme]);
 
   useFrame((state) => {
     if (!meshRef.current) return;
@@ -73,13 +82,14 @@ const BackgroundShader = () => {
         fragmentShader={`
           uniform float u_time;
           uniform vec2 u_mouse;
+          uniform float u_isDark;
           varying vec2 vUv;
 
           void main() {
-            vec3 ivory = vec3(0.99, 0.985, 0.97);
-            vec3 beige = vec3(0.965, 0.945, 0.915);
-            vec3 sand = vec3(0.935, 0.905, 0.865);
-            vec3 gold = vec3(0.915, 0.875, 0.825);
+            vec3 ivory = mix(vec3(0.99, 0.985, 0.97), vec3(0.11, 0.10, 0.09), u_isDark);
+            vec3 beige = mix(vec3(0.965, 0.945, 0.915), vec3(0.15, 0.14, 0.13), u_isDark);
+            vec3 sand = mix(vec3(0.935, 0.905, 0.865), vec3(0.19, 0.17, 0.15), u_isDark);
+            vec3 gold = mix(vec3(0.915, 0.875, 0.825), vec3(0.23, 0.20, 0.17), u_isDark);
 
             vec2 uv = vUv;
 
@@ -181,7 +191,7 @@ export const AgentTopologyCanvas = ({ onClose }) => {
   };
 
   return (
-    <div className="relative w-full h-full flex flex-col overflow-hidden bg-stone-50">
+    <div className="relative w-full h-full flex flex-col overflow-hidden bg-stone-50 dark:bg-stone-950">
       
       {/* Control Tabs */}
       <div className="absolute top-4 left-4 z-10 flex gap-2">
@@ -195,8 +205,8 @@ export const AgentTopologyCanvas = ({ onClose }) => {
               onClick={() => setActiveLayout(mode.id)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-semibold transition-all duration-300 backdrop-blur-md cursor-pointer ${
                 isActive
-                  ? 'bg-beige-150 border-beige-200 text-beige-700 shadow-[0_2px_8px_rgba(168,152,120,0.08)]'
-                  : 'bg-white/40 border-stone-200 text-stone-500 hover:text-stone-900 hover:bg-stone-100/50'
+                  ? 'bg-beige-150 dark:bg-stone-800 border-beige-200 dark:border-stone-700 text-beige-700 dark:text-stone-200 shadow-[0_2px_8px_rgba(168,152,120,0.08)]'
+                  : 'bg-white/40 dark:bg-stone-900/40 border-stone-200 dark:border-stone-700 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100/50 dark:hover:bg-stone-800/50'
               }`}
             >
               <Icon className="h-3.5 w-3.5" />
@@ -210,7 +220,7 @@ export const AgentTopologyCanvas = ({ onClose }) => {
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 bg-white/70 text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-all duration-300 backdrop-blur-md text-[11px] font-semibold cursor-pointer"
+          className="absolute top-4 right-4 z-10 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 bg-white/70 dark:bg-stone-900/70 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-stone-100 dark:hover:bg-stone-800 transition-all duration-300 backdrop-blur-md text-[11px] font-semibold cursor-pointer"
         >
           <EyeOff className="h-3.5 w-3.5" />
           <span>Hide Map</span>
@@ -269,28 +279,28 @@ export const AgentTopologyCanvas = ({ onClose }) => {
 
       {/* Live Topology status bar overlay */}
       <div className="absolute bottom-4 left-4 right-4 z-10 flex gap-4 overflow-x-auto py-2 shrink-0">
-        <GlassCard className="p-3.5! rounded-xl flex-1 flex items-center justify-between border-stone-200/60 bg-white/80 backdrop-blur-xl">
-          <div className="flex items-center gap-2 text-[10px] font-bold text-stone-500 tracking-wider uppercase font-mono">
-            <Activity className="h-3.5 w-3.5 text-beige-600" />
+        <GlassCard className="p-3.5! rounded-xl flex-1 flex items-center justify-between border-stone-200/60 dark:border-stone-700 bg-white/80 dark:bg-stone-900/80 backdrop-blur-xl">
+          <div className="flex items-center gap-2 text-[10px] font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono">
+            <Activity className="h-3.5 w-3.5 text-beige-600 dark:text-beige-400" />
             <span>Agent Deployment Ring:</span>
           </div>
 
-          <div className="flex items-center gap-6 text-[10px] font-semibold text-stone-600 font-mono">
+          <div className="flex items-center gap-6 text-[10px] font-semibold text-stone-600 dark:text-stone-300 font-mono">
             <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-              <span>Orchestrator: <b className="text-emerald-600 capitalize">{agentStates.orchestrator?.status}</b></span>
+              <span>Orchestrator: <b className="text-emerald-600 dark:text-emerald-400 capitalize">{agentStates.orchestrator?.status}</b></span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-              <span>RAG indexing: <b className="text-emerald-600 capitalize">{agentStates.rag_agent?.status}</b></span>
+              <span>RAG indexing: <b className="text-emerald-600 dark:text-emerald-400 capitalize">{agentStates.rag_agent?.status}</b></span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-beige-500 shadow-[0_0_6px_rgba(196,181,160,0.4)]" />
-              <span>Gmail monitoring: <b className="text-beige-600 capitalize">{agentStates.gmail_agent?.status}</b></span>
+              <span>Gmail monitoring: <b className="text-beige-600 dark:text-beige-400 capitalize">{agentStates.gmail_agent?.status}</b></span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="h-2 w-2 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(217,119,6,0.4)]" />
-              <span>Coding logic: <b className="text-amber-600 capitalize">connected</b></span>
+              <span>Coding logic: <b className="text-amber-600 dark:text-amber-400 capitalize">connected</b></span>
             </div>
           </div>
         </GlassCard>

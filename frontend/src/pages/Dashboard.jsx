@@ -18,7 +18,7 @@ export const Dashboard = () => {
   useAgentStatus(3000);
 
   return (
-    <div className="flex h-screen w-screen bg-[#F5F2EB] text-stone-900 overflow-hidden font-sans">
+    <div className="flex h-screen w-screen bg-[#F5F2EB] dark:bg-stone-950 text-stone-900 dark:text-stone-100 overflow-hidden font-sans">
       {/* Sidebar navigation */}
       <Sidebar />
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "📊 Nass Agent System Status"
+echo "📊 Atlas Agent System Status"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 

@@ -20,11 +20,11 @@ export const GlassCard = ({ children, className = '', contentClassName = '', ...
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onMouseMove={handleMouseMove}
-      className={`relative bg-white/30 backdrop-blur-2xl border border-white/50 shadow-[0_8px_40px_rgba(168,152,120,0.1),inset_0_1px_0_rgba(255,255,255,0.6)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/40 hover:border-white/65 min-h-0 ${className}`}
+      className={`relative bg-white/30 dark:bg-stone-900/40 backdrop-blur-2xl border border-white/50 dark:border-stone-700 shadow-[0_8px_40px_rgba(168,152,120,0.1),inset_0_1px_0_rgba(255,255,255,0.6)] rounded-2xl overflow-hidden transition-all duration-300 hover:bg-white/40 dark:hover:bg-stone-900/60 hover:border-white/65 dark:hover:border-stone-600 min-h-0 ${className}`}
       {...props}
     >
       {/* Top glass shine */}
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none z-20" />
+      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/80 dark:via-white/20 to-transparent pointer-events-none z-20" />
 
       {/* Liquid ripple glow on hover */}
       {isHovered && (

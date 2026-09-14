@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { useAppStore } from './useAppStore';
 
-const CODING_SESSIONS_KEY = 'nass_coding_sessions_v1';
-const ACTIVE_CODING_SESSION_KEY = 'nass_active_coding_session_id_v1';
+const CODING_SESSIONS_KEY = 'atlas_coding_sessions_v1';
+const ACTIVE_CODING_SESSION_KEY = 'atlas_active_coding_session_id_v1';
 
 const getStorageKeys = () => {
   const user = useAppStore.getState().user;

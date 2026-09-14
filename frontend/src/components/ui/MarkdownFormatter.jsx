@@ -11,11 +11,11 @@ export const MarkdownFormatter = ({ text = '' }) => {
     
     return tokens.map((token, i) => {
       if (token.startsWith('**') && token.endsWith('**')) {
-        return <strong key={i} className="font-bold text-stone-900">{token.slice(2, -2)}</strong>;
+        return <strong key={i} className="font-bold text-stone-900 dark:text-stone-100">{token.slice(2, -2)}</strong>;
       }
       if (token.startsWith('`') && token.endsWith('`')) {
         return (
-          <code key={i} className="px-1.5 py-0.5 mx-0.5 rounded bg-amber-500/10 text-amber-800 font-mono text-[10.5px] font-semibold border border-amber-500/10">
+          <code key={i} className="px-1.5 py-0.5 mx-0.5 rounded bg-amber-500/10 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono text-[10.5px] font-semibold border border-amber-500/10 dark:border-amber-500/20">
             {token.slice(1, -1)}
           </code>
         );
@@ -28,7 +28,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
             href={linkMatch[2]}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-amber-600 hover:text-amber-500 underline font-medium transition-colors"
+            className="text-amber-600 dark:text-amber-400 hover:text-amber-500 dark:hover:text-amber-300 underline font-medium transition-colors"
           >
             {linkMatch[1]}
           </a>
@@ -42,7 +42,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
   const parts = text.split(/(```[\s\S]*?```)/g);
 
   return (
-    <div className="space-y-2.5 font-sans text-stone-800 text-xs">
+    <div className="space-y-2.5 font-sans text-stone-800 dark:text-stone-200 text-xs">
       {parts.map((part, index) => {
         if (part.startsWith('```') && part.endsWith('```')) {
           // Code Block
@@ -52,7 +52,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
           const codeContent = lines.slice(1, -1).join('\n');
 
           return (
-            <div key={index} className="my-3.5 rounded-xl border border-stone-200/60 overflow-hidden bg-stone-900 text-stone-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-mono text-[11px]">
+            <div key={index} className="my-3.5 rounded-xl border border-stone-200/60 dark:border-stone-700 overflow-hidden bg-stone-900 text-stone-100 shadow-[0_4px_12px_rgba(0,0,0,0.08)] font-mono text-[11px]">
               <div className="flex items-center justify-between px-4 py-2 bg-stone-850 border-b border-stone-800/80 text-[10px] text-stone-400 font-bold uppercase tracking-wider shrink-0 select-none">
                 <span>{language}</span>
                 <button
@@ -76,7 +76,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
           const flushList = (key) => {
             if (currentList.length > 0) {
               elements.push(
-                <ul key={key} className="list-disc pl-5 my-2 space-y-1 text-stone-700">
+                <ul key={key} className="list-disc pl-5 my-2 space-y-1 text-stone-700 dark:text-stone-300">
                   {currentList.map((li, idx) => (
                     <li key={idx} className="leading-relaxed">{parseInline(li)}</li>
                   ))}
@@ -96,7 +96,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
               const textContent = trimmed.replace(/^#+\s*/, '');
               const sizeClass = level === 1 ? 'text-sm font-bold mt-4 mb-2' : level === 2 ? 'text-xs font-bold mt-3 mb-1.5' : 'text-[11px] font-bold mt-2.5 mb-1';
               elements.push(
-                <h4 key={`h-${lineIdx}`} className={`${sizeClass} text-stone-900 font-sans uppercase tracking-wide`}>
+                <h4 key={`h-${lineIdx}`} className={`${sizeClass} text-stone-900 dark:text-stone-100 font-sans uppercase tracking-wide`}>
                   {parseInline(textContent)}
                 </h4>
               );
@@ -111,8 +111,8 @@ export const MarkdownFormatter = ({ text = '' }) => {
               flushList(`list-${lineIdx}`);
               const textContent = trimmed.replace(/^\d+\.\s+/, '');
               elements.push(
-                <div key={`ol-${lineIdx}`} className="flex items-start gap-2 my-1.5 pl-2 leading-relaxed text-stone-700">
-                  <span className="font-bold text-amber-600 font-mono text-[10px] mt-0.5 shrink-0 select-none">
+                <div key={`ol-${lineIdx}`} className="flex items-start gap-2 my-1.5 pl-2 leading-relaxed text-stone-700 dark:text-stone-300">
+                  <span className="font-bold text-amber-600 dark:text-amber-400 font-mono text-[10px] mt-0.5 shrink-0 select-none">
                     {trimmed.match(/^\d+/)[0]}.
                   </span>
                   <div>{parseInline(textContent)}</div>
@@ -128,7 +128,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
               flushList(`list-${lineIdx}`);
               const textContent = trimmed.replace(/^>\s*/, '');
               elements.push(
-                <blockquote key={`bq-${lineIdx}`} className="pl-3 border-l-2 border-amber-500/40 text-stone-500 italic my-2 bg-amber-500/5 py-1.5 px-2 rounded-r-md">
+                <blockquote key={`bq-${lineIdx}`} className="pl-3 border-l-2 border-amber-500/40 text-stone-500 dark:text-stone-400 italic my-2 bg-amber-500/5 dark:bg-amber-500/10 py-1.5 px-2 rounded-r-md">
                   {parseInline(textContent)}
                 </blockquote>
               );
@@ -137,7 +137,7 @@ export const MarkdownFormatter = ({ text = '' }) => {
             else {
               flushList(`list-${lineIdx}`);
               elements.push(
-                <p key={`p-${lineIdx}`} className="leading-relaxed mb-1.5 text-stone-700">
+                <p key={`p-${lineIdx}`} className="leading-relaxed mb-1.5 text-stone-700 dark:text-stone-300">
                   {parseInline(line)}
                 </p>
               );

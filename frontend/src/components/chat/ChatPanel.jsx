@@ -191,7 +191,7 @@ export const ChatPanel = () => {
 
   if (chats.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center p-6 text-stone-500 font-sans">
+      <div className="flex-1 flex items-center justify-center p-6 text-stone-500 dark:text-stone-400 font-sans">
         Loading conversations...
       </div>
     );
@@ -216,7 +216,7 @@ export const ChatPanel = () => {
           className="flex-grow flex flex-col min-h-0 overflow-hidden"
           contentClassName="flex-1 flex flex-col min-h-0 overflow-hidden p-3"
         >
-          <div className="text-[10px] font-bold text-stone-500 tracking-wider uppercase font-mono mb-2 px-1 shrink-0">
+          <div className="text-[10px] font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono mb-2 px-1 shrink-0">
             Recent Conversations
           </div>
 
@@ -226,12 +226,12 @@ export const ChatPanel = () => {
                 key={chat.id}
                 onClick={() => setActiveChatId(chat.id)}
                 className={`group flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 border ${chat.id === activeChatId
-                    ? 'bg-amber-500/10 border-amber-500/20 text-amber-900 font-medium'
-                    : 'hover:bg-white/50 text-stone-700 hover:text-stone-900 border-transparent'
+                    ? 'bg-amber-500/10 dark:bg-amber-500/20 border-amber-500/20 dark:border-amber-500/30 text-amber-900 dark:text-amber-200 font-medium'
+                    : 'hover:bg-white/50 dark:hover:bg-stone-800/50 text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 border-transparent'
                   }`}
               >
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <MessageSquare className={`h-4 w-4 shrink-0 ${chat.id === activeChatId ? 'text-amber-600' : 'text-stone-400 group-hover:text-stone-600'
+                  <MessageSquare className={`h-4 w-4 shrink-0 ${chat.id === activeChatId ? 'text-amber-600 dark:text-amber-400' : 'text-stone-400 dark:text-stone-500 group-hover:text-stone-600 dark:group-hover:text-stone-300'
                     }`} />
                   <span className="text-xs truncate">{chat.title}</span>
                 </div>
@@ -242,7 +242,7 @@ export const ChatPanel = () => {
                     e.stopPropagation();
                     deleteChat(chat.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-stone-100/80 text-stone-400 hover:text-red-500 transition-all duration-150 cursor-pointer"
+                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-stone-100/80 dark:hover:bg-stone-800/80 text-stone-400 dark:text-stone-500 hover:text-red-500 dark:hover:text-red-400 transition-all duration-150 cursor-pointer"
                   title="Delete conversation"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
@@ -259,13 +259,13 @@ export const ChatPanel = () => {
         <GlassCard className="mb-4 shrink-0 p-4! rounded-xl">
           <button
             onClick={() => setShowSystemPrompt(!showSystemPrompt)}
-            className="flex items-center justify-between w-full text-stone-700 hover:text-stone-900 font-bold text-xs font-sans"
+            className="flex items-center justify-between w-full text-stone-700 dark:text-stone-200 hover:text-stone-900 dark:hover:text-white font-bold text-xs font-sans"
           >
             <div className="flex items-center gap-2">
-              <Terminal className="h-4 w-4 text-beige-600" />
+              <Terminal className="h-4 w-4 text-beige-600 dark:text-beige-400" />
               <span>SYSTEM PROMPT INSTRUCTIONS</span>
             </div>
-            {showSystemPrompt ? <ChevronUp className="h-4 w-4 text-stone-500" /> : <ChevronDown className="h-4 w-4 text-stone-500" />}
+            {showSystemPrompt ? <ChevronUp className="h-4 w-4 text-stone-500 dark:text-stone-400" /> : <ChevronDown className="h-4 w-4 text-stone-500 dark:text-stone-400" />}
           </button>
 
           {showSystemPrompt && (
@@ -274,7 +274,7 @@ export const ChatPanel = () => {
                 value={activeSystemPrompt}
                 onChange={(e) => updateActiveSystemPrompt(e.target.value)}
                 rows={3}
-                className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2.5 text-xs text-stone-800 font-mono focus:outline-none focus:border-beige-400"
+                className="w-full bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-700 rounded-xl px-4 py-2.5 text-xs text-stone-800 dark:text-stone-200 font-mono focus:outline-none focus:border-beige-400 dark:focus:border-stone-500"
               />
             </div>
           )}
@@ -282,16 +282,16 @@ export const ChatPanel = () => {
 
         {/* Ollama Local URL Configuration */}
         {activeProvider === 'ollama' && (
-          <GlassCard className="mb-4 shrink-0 p-3! rounded-xl border-beige-200/50 bg-beige-150/50">
+          <GlassCard className="mb-4 shrink-0 p-3! rounded-xl border-beige-200/50 dark:border-stone-700 bg-beige-150/50 dark:bg-stone-800/50">
             <div className="flex items-center gap-3">
-              <Radio className="h-4 w-4 text-beige-600 animate-pulse" />
-              <span className="text-xs font-bold text-beige-700 font-sans">Ollama Local Connection</span>
+              <Radio className="h-4 w-4 text-beige-600 dark:text-beige-400 animate-pulse" />
+              <span className="text-xs font-bold text-beige-700 dark:text-beige-300 font-sans">Ollama Local Connection</span>
               <input
                 type="text"
                 value={ollamaBaseUrl}
                 onChange={(e) => setOllamaBaseUrl(e.target.value)}
                 placeholder="e.g. http://localhost:11434"
-                className="bg-white border border-beige-300/60 text-stone-800 text-xs rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 font-mono flex-1"
+                className="bg-white dark:bg-stone-800 border border-beige-300/60 dark:border-stone-700 text-stone-800 dark:text-stone-200 text-xs rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono flex-1"
               />
             </div>
           </GlassCard>
@@ -306,13 +306,13 @@ export const ChatPanel = () => {
               <MessageBubble key={index} message={msg} />
             ))}
             {isLoading && (
-              <div className="flex items-center gap-2 text-xs text-stone-400 font-mono pl-2">
-                <Sparkles className="h-4 w-4 text-beige-600 animate-spin" />
+              <div className="flex items-center gap-2 text-xs text-stone-400 dark:text-stone-500 font-mono pl-2">
+                <Sparkles className="h-4 w-4 text-beige-600 dark:text-beige-400 animate-spin" />
                 <span>Agents thinking...</span>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="text-[11px] font-sans text-amber-700 hover:text-amber-900 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-md ml-2 cursor-pointer transition-colors"
+                  className="text-[11px] font-sans text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100 bg-amber-100 dark:bg-amber-900/40 hover:bg-amber-200 dark:hover:bg-amber-900/60 px-2 py-0.5 rounded-md ml-2 cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
@@ -329,7 +329,7 @@ export const ChatPanel = () => {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask orchestrator a query..."
-            className="w-full bg-white/40 border border-white/50 backdrop-blur-md rounded-2xl pl-5 pr-14 py-4 text-sm text-stone-800 focus:outline-none focus:border-beige-400 shadow-[0_4px_24px_rgba(28,25,23,0.02)] placeholder-stone-400"
+            className="w-full bg-white/40 dark:bg-stone-800/40 border border-white/50 dark:border-stone-700 backdrop-blur-md rounded-2xl pl-5 pr-14 py-4 text-sm text-stone-800 dark:text-stone-200 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 shadow-[0_4px_24px_rgba(28,25,23,0.02)] placeholder-stone-400 dark:placeholder-stone-500"
           />
           <button
             ref={sendBtnRef}

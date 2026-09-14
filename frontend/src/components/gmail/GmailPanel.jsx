@@ -262,16 +262,16 @@ export const GmailPanel = () => {
   if (!connected) {
     return (
       <div className="flex-1 flex items-center justify-center p-6 h-full">
-        <GlassCard className="max-w-md w-full p-8! text-center flex flex-col items-center rounded-3xl border-stone-200 bg-white/70">
-          <div className="p-4 rounded-full bg-beige-150 mb-6 border border-beige-200">
-            <Mail className="h-10 w-10 text-beige-600" />
+        <GlassCard className="max-w-md w-full p-8! text-center flex flex-col items-center rounded-3xl border-stone-200 dark:border-stone-700 bg-white/70 dark:bg-stone-900/70">
+          <div className="p-4 rounded-full bg-beige-150 dark:bg-stone-800 mb-6 border border-beige-200 dark:border-stone-700">
+            <Mail className="h-10 w-10 text-beige-600 dark:text-beige-400" />
           </div>
 
-          <h2 className="text-xl font-bold text-stone-900 mb-2 font-sans tracking-wide">
+          <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100 mb-2 font-sans tracking-wide">
             Gmail Agent Integration
           </h2>
           
-          <p className="text-xs text-stone-600 leading-relaxed mb-6 font-sans">
+          <p className="text-xs text-stone-600 dark:text-stone-300 leading-relaxed mb-6 font-sans">
             Connect your Google Workspace or Gmail account to securely view, summarize, and manage your emails with AI.
           </p>
 
@@ -289,7 +289,7 @@ export const GmailPanel = () => {
           </button>
 
           {isConnecting && (
-            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex flex-col gap-2 w-full text-center">
+            <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs text-amber-800 dark:text-amber-200 flex flex-col gap-2 w-full text-center">
               <p>A new tab was opened for Google sign-in. Complete the consent flow there, then click:</p>
               <button
                 onClick={handleManualRefreshAfterConnect}
@@ -311,8 +311,8 @@ export const GmailPanel = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <GlassCard className="h-full p-5! flex flex-col rounded-2xl">
           <div className="flex items-center justify-between mb-4 shrink-0">
-            <div className="flex items-center gap-2 text-xs font-bold text-stone-500 tracking-wider uppercase font-mono">
-              <Mail className="h-4 w-4 text-beige-600" />
+            <div className="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono">
+              <Mail className="h-4 w-4 text-beige-600 dark:text-beige-400" />
               <span>Inbox Navigator</span>
             </div>
             
@@ -320,7 +320,7 @@ export const GmailPanel = () => {
               <button 
                 onClick={fetchEmailsList}
                 disabled={isLoading}
-                className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-500 hover:text-stone-900 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
                 title="Refresh Inbox"
               >
                 <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -328,7 +328,7 @@ export const GmailPanel = () => {
 
               <button
                 onClick={handleDisconnect}
-                className="flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-red-50 text-stone-400 hover:text-red-600 text-xs font-medium transition-colors border border-transparent hover:border-red-200"
+                className="flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 text-stone-400 dark:text-stone-500 hover:text-red-600 dark:hover:text-red-400 text-xs font-medium transition-colors border border-transparent hover:border-red-200 dark:hover:border-red-800"
                 title="Disconnect Gmail"
               >
                 <LogOut className="h-3 w-3" />

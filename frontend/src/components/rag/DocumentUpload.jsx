@@ -97,8 +97,8 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
       onDrop={handleDrop}
       className={`relative w-full border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all duration-300 overflow-hidden ${
         dragActive 
-          ? 'border-beige-400 bg-beige-150/40' 
-          : 'border-stone-200 hover:border-stone-300 bg-white/40'
+          ? 'border-beige-400 dark:border-beige-500 bg-beige-150/40 dark:bg-stone-800/40' 
+          : 'border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 bg-white/40 dark:bg-stone-800/40'
       }`}
     >
       <div 
@@ -119,16 +119,16 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
       <div className="relative z-10 flex flex-col items-center justify-center text-center">
         {uploadState === 'idle' && (
           <>
-            <Upload className="h-10 w-10 text-stone-400 mb-3 animate-bounce" />
-            <p className="text-sm font-bold text-stone-700 mb-1">
+            <Upload className="h-10 w-10 text-stone-400 dark:text-stone-500 mb-3 animate-bounce" />
+            <p className="text-sm font-bold text-stone-700 dark:text-stone-200 mb-1">
               Drag & drop document files here
             </p>
-            <p className="text-xs text-stone-400 mb-4">
+            <p className="text-xs text-stone-400 dark:text-stone-500 mb-4">
               Supports PDF, TXT, MD, DOCX or CSV up to 10MB
             </p>
             <button
               onClick={onButtonClick}
-              className="px-4 py-2 rounded-xl bg-stone-100 border border-stone-200 text-xs font-semibold text-stone-700 hover:bg-stone-200/55 transition-all"
+              className="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-200/55 dark:hover:bg-stone-700 transition-all cursor-pointer"
             >
               Browse Local Files
             </button>
@@ -137,11 +137,11 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
 
         {uploadState === 'uploading' && (
           <>
-            <Loader2 className="h-10 w-10 text-beige-600 mb-3 animate-spin" />
-            <p className="text-sm font-bold text-beige-700 mb-1">
+            <Loader2 className="h-10 w-10 text-beige-600 dark:text-beige-400 mb-3 animate-spin" />
+            <p className="text-sm font-bold text-beige-700 dark:text-beige-300 mb-1">
               Ingesting & Chunking Document...
             </p>
-            <p className="text-xs text-stone-500 font-mono italic max-w-xs truncate">
+            <p className="text-xs text-stone-500 dark:text-stone-400 font-mono italic max-w-xs truncate">
               {fileName}
             </p>
           </>
@@ -149,16 +149,16 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
 
         {uploadState === 'success' && (
           <>
-            <CheckCircle2 className="h-10 w-10 text-emerald-600 mb-3" />
-            <p className="text-sm font-bold text-emerald-700 mb-1">
+            <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400 mb-3" />
+            <p className="text-sm font-bold text-emerald-700 dark:text-emerald-300 mb-1">
               Document Ingested Successfully!
             </p>
-            <p className="text-xs text-stone-500 font-mono truncate max-w-xs mb-4">
+            <p className="text-xs text-stone-500 dark:text-stone-400 font-mono truncate max-w-xs mb-4">
               {fileName}
             </p>
             <button
               onClick={() => setUploadState('idle')}
-              className="px-4 py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 hover:bg-emerald-100 transition-all"
+              className="px-4 py-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-all cursor-pointer"
             >
               Upload Another File
             </button>
@@ -167,16 +167,16 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
 
         {uploadState === 'error' && (
           <>
-            <AlertCircle className="h-10 w-10 text-rose-600 mb-3" />
-            <p className="text-sm font-bold text-rose-700 mb-1">
+            <AlertCircle className="h-10 w-10 text-rose-600 dark:text-rose-400 mb-3" />
+            <p className="text-sm font-bold text-rose-700 dark:text-rose-300 mb-1">
               Failed to Upload Document
             </p>
-            <p className="text-xs text-rose-600 max-w-xs mb-4">
+            <p className="text-xs text-rose-600 dark:text-rose-400 max-w-xs mb-4">
               {errorMsg}
             </p>
             <button
               onClick={() => setUploadState('idle')}
-              className="px-4 py-2 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 hover:bg-rose-100 transition-all"
+              className="px-4 py-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-all cursor-pointer"
             >
               Try Again
             </button>

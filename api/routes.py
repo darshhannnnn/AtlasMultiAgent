@@ -281,12 +281,15 @@ def agents_status():
     else:
         status["ollama"] = {"status": "disconnected", "latency": 0}
 
-    # Backend Agents status (idle states)
-    status["orchestrator"] = {"status": "idle", "latency": 45, "last_action": "Listening for prompts"}
-    status["rag_agent"] = {"status": "idle", "latency": 80, "last_action": "Ready to query indexes"}
-    status["gmail_agent"] = {"status": "idle", "latency": 150, "last_action": "Monitoring messages"}
-    status["code_generator"] = {"status": "idle", "latency": 110, "last_action": "Synthesizing code"}
-    status["code_critic"] = {"status": "idle", "latency": 130, "last_action": "Evaluating scripts"}
+    # Backend Agents status (derived from real readiness)
+    cfg_check = settings.get_llm_config()
+    llm_ready = bool(cfg_check.get("api_key"))
+
+    status["orchestrator"] = {"status": "connected" if llm_ready else "idle", "latency": 45, "last_action": "Listening for prompts"}
+    status["rag_agent"] = {"status": "connected" if is_chroma_ready else "idle", "latency": 80, "last_action": "Ready to query indexes"}
+    status["gmail_agent"] = {"status": "connected" if os.path.exists(settings.GMAIL_TOKEN_PATH) else "idle", "latency": 150, "last_action": "Monitoring messages"}
+    status["code_generator"] = {"status": "connected" if llm_ready else "idle", "latency": 110, "last_action": "Synthesizing code"}
+    status["code_critic"] = {"status": "connected" if llm_ready else "idle", "latency": 130, "last_action": "Evaluating scripts"}
 
     # Cloud LLM endpoints presence based on active settings
     cfg = settings.get_llm_config()

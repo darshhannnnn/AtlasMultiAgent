@@ -67,10 +67,10 @@ export const Login = () => {
 
   // Read configured Google client_id and client_secret from localStorage or environment
   const [googleClientId, setGoogleClientId] = useState(
-    localStorage.getItem('nass_google_client_id') || import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+    localStorage.getItem('atlas_google_client_id') || import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
   );
   const [googleClientSecret, setGoogleClientSecret] = useState(
-    localStorage.getItem('nass_google_client_secret') || import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
+    localStorage.getItem('atlas_google_client_secret') || import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
   );
   const [showConfig, setShowConfig] = useState(false);
 
@@ -148,8 +148,8 @@ export const Login = () => {
     }
     setError('');
     // Persist configured client ID
-    localStorage.setItem('nass_google_client_id', googleClientId.trim());
-    localStorage.setItem('nass_google_client_secret', googleClientSecret.trim());
+    localStorage.setItem('atlas_google_client_id', googleClientId.trim());
+    localStorage.setItem('atlas_google_client_secret', googleClientSecret.trim());
     sessionStorage.setItem('google_oauth_client_secret', googleClientSecret.trim());
 
     // 1. Prefer Google Identity Services (GIS) popup flow (does not suffer from redirect_uri mismatch)
@@ -237,31 +237,31 @@ export const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-beige-100 overflow-hidden flex items-center justify-center p-6 font-sans z-10">
+    <div className="relative min-h-screen w-full bg-beige-100 dark:bg-stone-950 overflow-hidden flex items-center justify-center p-6 font-sans z-10">
       {/* Ambient floating glass panels */}
       <motion.div
         custom={0}
         variants={floatingVariants}
         animate="animate"
-        className="absolute top-[12%] left-[8%] w-48 h-48 rounded-3xl bg-white/25 border border-white/50 backdrop-blur-2xl shadow-[0_20px_60px_rgba(168,152,120,0.08)] hidden lg:block pointer-events-none"
+        className="absolute top-[12%] left-[8%] w-48 h-48 rounded-3xl bg-white/25 dark:bg-stone-800/25 border border-white/50 dark:border-stone-700 backdrop-blur-2xl shadow-[0_20px_60px_rgba(168,152,120,0.08)] hidden lg:block pointer-events-none"
       />
       <motion.div
         custom={1}
         variants={floatingVariants}
         animate="animate"
-        className="absolute bottom-[18%] right-[10%] w-56 h-32 rounded-3xl bg-white/35 border border-white/50 backdrop-blur-xl shadow-[0_20px_60px_rgba(28,25,23,0.05)] hidden lg:block pointer-events-none"
+        className="absolute bottom-[18%] right-[10%] w-56 h-32 rounded-3xl bg-white/35 dark:bg-stone-800/35 border border-white/50 dark:border-stone-700 backdrop-blur-xl shadow-[0_20px_60px_rgba(28,25,23,0.05)] hidden lg:block pointer-events-none"
       />
       <motion.div
         custom={2}
         variants={floatingVariants}
         animate="animate"
-        className="absolute top-[22%] right-[18%] w-28 h-28 rounded-full bg-gradient-to-br from-beige-200/30 to-beige-400/10 border border-beige-200/40 backdrop-blur-md shadow-[0_12px_40px_rgba(168,152,120,0.08)] hidden md:block pointer-events-none"
+        className="absolute top-[22%] right-[18%] w-28 h-28 rounded-full bg-gradient-to-br from-beige-200/30 to-beige-400/10 border border-beige-200/40 dark:border-stone-700 backdrop-blur-md shadow-[0_12px_40px_rgba(168,152,120,0.08)] hidden md:block pointer-events-none"
       />
       <motion.div
         custom={3}
         variants={floatingVariants}
         animate="animate"
-        className="absolute bottom-[28%] left-[14%] w-36 h-36 rounded-2xl bg-white/30 border border-stone-200/40 backdrop-blur-lg shadow-[0_16px_48px_rgba(28,25,23,0.04)] hidden md:block pointer-events-none"
+        className="absolute bottom-[28%] left-[14%] w-36 h-36 rounded-2xl bg-white/30 dark:bg-stone-800/30 border border-stone-200/40 dark:border-stone-700 backdrop-blur-lg shadow-[0_16px_48px_rgba(28,25,23,0.04)] hidden md:block pointer-events-none"
       />
 
       <div className="relative z-10 w-full max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
@@ -279,14 +279,14 @@ export const Login = () => {
               variants={floatingVariants}
               animate="animate"
             >
-              <GlassCard className="p-4! rounded-2xl bg-white/50 backdrop-blur-xl border-white/60">
+              <GlassCard className="p-4! rounded-2xl bg-white/50 dark:bg-stone-900/60 backdrop-blur-xl border-white/60 dark:border-stone-700">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-beige-150 border border-beige-200 shrink-0">
-                    <Icon className="h-4 w-4 text-beige-600" />
+                  <div className="p-2 rounded-xl bg-beige-150 dark:bg-stone-800 border border-beige-200 dark:border-stone-700 shrink-0">
+                    <Icon className="h-4 w-4 text-beige-600 dark:text-beige-400" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-stone-800 tracking-wide">{label}</p>
-                    <p className="text-[10px] text-stone-500 mt-0.5 leading-relaxed">{desc}</p>
+                    <p className="text-xs font-bold text-stone-800 dark:text-stone-200 tracking-wide">{label}</p>
+                    <p className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 leading-relaxed">{desc}</p>
                   </div>
                 </div>
               </GlassCard>
@@ -301,21 +301,21 @@ export const Login = () => {
           transition={{ duration: 0.45, ease: [0.25, 1, 0.5, 1] }}
           className="w-full max-w-md"
         >
-          <GlassCard className="p-8! rounded-3xl bg-white/25 backdrop-blur-2xl border-white/55 shadow-[0_24px_64px_rgba(168,152,120,0.12)]">
+          <GlassCard className="p-8! rounded-3xl bg-white/25 dark:bg-stone-900/70 backdrop-blur-2xl border-white/55 dark:border-stone-700 shadow-[0_24px_64px_rgba(168,152,120,0.12)]">
             {/* Brand header */}
             <div className="flex flex-col items-center text-center mb-8">
               <div className="p-4 rounded-2xl bg-gradient-to-tr from-beige-400 to-beige-600 shadow-[0_8px_24px_rgba(168,152,120,0.25)] mb-5">
                 <Cpu className="h-8 w-8 text-white" />
               </div>
-              <h1 className="text-2xl font-extrabold text-stone-900 tracking-wide">
-                Nass Agent Console
+              <h1 className="text-2xl font-extrabold text-stone-900 dark:text-stone-100 tracking-wide">
+                Atlas Agent Console
               </h1>
-              <p className="text-xs text-stone-500 mt-2 leading-relaxed max-w-xs">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-2 leading-relaxed max-w-xs">
                 {isSignUp ? 'Create a new account' : 'Sign in to access your multi-agent orchestration workspace'}
               </p>
-              <div className="flex items-center gap-1.5 mt-4 px-3 py-1 rounded-full bg-white/35 border border-white/50">
+              <div className="flex items-center gap-1.5 mt-4 px-3 py-1 rounded-full bg-white/35 dark:bg-stone-800/50 border border-white/50 dark:border-stone-700">
                 <PulseOrb status="idle" />
-                <span className="text-[10px] font-bold text-stone-500 font-mono uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-stone-500 dark:text-stone-400 font-mono uppercase tracking-wider">
                   Secure Access
                 </span>
               </div>
@@ -325,7 +325,7 @@ export const Login = () => {
               {/* Name (Sign Up only) */}
               {isSignUp && (
                 <div className="flex flex-col gap-1.5 animate-fadeIn">
-                  <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">
+                  <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">
                     Full Name
                   </label>
                   <div className="relative">
@@ -334,16 +334,16 @@ export const Login = () => {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Your name"
-                      className="w-full bg-white/70 border border-stone-200 text-stone-800 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-beige-400 backdrop-blur-md transition-colors"
+                      className="w-full bg-white/70 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-500 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 backdrop-blur-md transition-colors"
                     />
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400 dark:text-stone-500" />
                   </div>
                 </div>
               )}
 
               {/* Email */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">
+                <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">
                   Email
                 </label>
                 <div className="relative">
@@ -353,15 +353,15 @@ export const Login = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@company.com"
                     autoComplete="email"
-                    className="w-full bg-white/70 border border-stone-200 text-stone-800 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-beige-400 backdrop-blur-md transition-colors"
+                    className="w-full bg-white/70 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-500 text-sm rounded-xl pl-10 pr-4 py-2.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 backdrop-blur-md transition-colors"
                   />
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400 dark:text-stone-500" />
                 </div>
               </div>
 
               {/* Password */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[9px] font-bold text-stone-500 uppercase tracking-wider font-mono">
+                <label className="text-[9px] font-bold text-stone-500 dark:text-stone-400 uppercase tracking-wider font-mono">
                   Password
                 </label>
                 <div className="relative">
@@ -371,13 +371,13 @@ export const Login = () => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder={isSignUp ? "Create a password" : "Enter your password"}
                     autoComplete="current-password"
-                    className="w-full bg-white/70 border border-stone-200 text-stone-800 text-sm rounded-xl pl-10 pr-10 py-2.5 focus:outline-none focus:border-beige-400 backdrop-blur-md transition-colors"
+                    className="w-full bg-white/70 dark:bg-stone-800/70 border border-stone-200 dark:border-stone-700 text-stone-800 dark:text-stone-200 placeholder:text-stone-400 dark:placeholder:text-stone-500 text-sm rounded-xl pl-10 pr-10 py-2.5 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 backdrop-blur-md transition-colors"
                   />
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400 dark:text-stone-500" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-400 dark:text-stone-500 hover:text-stone-700 dark:hover:text-stone-200 transition-colors"
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -391,9 +391,9 @@ export const Login = () => {
                     type="checkbox"
                     checked={remember}
                     onChange={(e) => setRemember(e.target.checked)}
-                    className="h-3.5 w-3.5 rounded border-stone-300 text-beige-600 focus:ring-beige-400/30 cursor-pointer"
+                    className="h-3.5 w-3.5 rounded border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-beige-600 focus:ring-beige-400/30 cursor-pointer"
                   />
-                  <span className="text-xs text-stone-600">Remember this device</span>
+                  <span className="text-xs text-stone-600 dark:text-stone-300">Remember this device</span>
                 </label>
               )}
 
@@ -401,7 +401,7 @@ export const Login = () => {
                 <motion.p
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-xs text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2 font-medium"
+                  className="text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900 rounded-xl px-3 py-2 font-medium"
                 >
                   {error}
                 </motion.p>
@@ -421,16 +421,16 @@ export const Login = () => {
               </button>
 
               <div className="relative flex py-2 items-center">
-                <div className="flex-grow border-t border-stone-200/60"></div>
-                <span className="flex-shrink mx-4 text-[10px] text-stone-400 font-bold uppercase tracking-wider font-mono">or</span>
-                <div className="flex-grow border-t border-stone-200/60"></div>
+                <div className="flex-grow border-t border-stone-200/60 dark:border-stone-700"></div>
+                <span className="flex-shrink mx-4 text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider font-mono">or</span>
+                <div className="flex-grow border-t border-stone-200/60 dark:border-stone-700"></div>
               </div>
 
               {/* Native same-tab Google Sign-In / Gmail Sign-Up button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="flex items-center justify-center gap-2.5 w-full py-3 mt-1 rounded-xl border border-stone-200/80 bg-white hover:bg-stone-50 text-stone-700 font-semibold text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer"
+                className="flex items-center justify-center gap-2.5 w-full py-3 mt-1 rounded-xl border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-stone-800 hover:bg-stone-50 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 font-semibold text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer"
               >
                 <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -460,7 +460,7 @@ export const Login = () => {
                   // Skip authentication and continue as guest
                   useAppStore.getState().loginAsGuest();
                 }}
-                className="flex items-center justify-center gap-2.5 w-full py-2.5 mt-1 rounded-xl border border-stone-200/60 bg-white/40 hover:bg-white/60 text-stone-600 font-medium text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.01)] cursor-pointer backdrop-blur-sm"
+                className="flex items-center justify-center gap-2.5 w-full py-2.5 mt-1 rounded-xl border border-stone-200/60 dark:border-stone-700 bg-white/40 dark:bg-stone-800/40 hover:bg-white/60 dark:hover:bg-stone-800/70 text-stone-600 dark:text-stone-300 font-medium text-sm transition-all shadow-[0_2px_8px_rgba(0,0,0,0.01)] cursor-pointer backdrop-blur-sm"
               >
                 <Sparkles className="h-4 w-4" />
                 <span>Continue as Guest</span>
@@ -471,17 +471,17 @@ export const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowConfig(!showConfig)}
-                  className="text-[9px] text-stone-400 hover:text-stone-600 font-bold uppercase tracking-wider font-mono hover:underline cursor-pointer"
+                  className="text-[9px] text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 font-bold uppercase tracking-wider font-mono hover:underline cursor-pointer"
                 >
                   {showConfig ? 'Hide Client ID Setup' : 'Configure Google Client ID'}
                 </button>
                 
                 {showConfig && (
-                  <div className="mt-2 p-3 bg-stone-50 border border-stone-200/80 rounded-xl w-full flex flex-col gap-2 text-left">
-                    <p className="text-[9.5px] text-stone-500 leading-normal font-sans">
+                  <div className="mt-2 p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200/80 dark:border-stone-700 rounded-xl w-full flex flex-col gap-2 text-left">
+                    <p className="text-[9.5px] text-stone-500 dark:text-stone-400 leading-normal font-sans">
                       Create a <b>Web application</b> Client ID in GCP Console, then add <code>{window.location.origin}</code> under:
                     </p>
-                    <ul className="list-disc list-inside text-[9px] text-stone-500 font-mono pl-1">
+                    <ul className="list-disc list-inside text-[9px] text-stone-500 dark:text-stone-400 font-mono pl-1">
                       <li>Authorized JavaScript origins</li>
                       <li>Authorized redirect URIs</li>
                     </ul>
@@ -490,28 +490,28 @@ export const Login = () => {
                       value={googleClientId}
                       onChange={(e) => {
                         setGoogleClientId(e.target.value);
-                        localStorage.setItem('nass_google_client_id', e.target.value.trim());
+                        localStorage.setItem('atlas_google_client_id', e.target.value.trim());
                       }}
                       placeholder="Paste your Web client ID..."
-                      className="w-full bg-white border border-stone-200 text-stone-700 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 font-mono text-ellipsis"
+                      className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono text-ellipsis"
                     />
                     <input
                       type="password"
                       value={googleClientSecret}
                       onChange={(e) => {
                         setGoogleClientSecret(e.target.value);
-                        localStorage.setItem('nass_google_client_secret', e.target.value.trim());
+                        localStorage.setItem('atlas_google_client_secret', e.target.value.trim());
                       }}
                       placeholder="Paste your Client Secret..."
-                      className="w-full bg-white border border-stone-200 text-stone-700 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 font-mono text-ellipsis"
+                      className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono text-ellipsis"
                     />
                   </div>
                 )}
               </div>
             </form>
 
-            <div className="mt-6 text-center text-xs select-none border-t border-stone-100 pt-4">
-              <span className="text-stone-500 font-sans">
+            <div className="mt-6 text-center text-xs select-none border-t border-stone-100 dark:border-stone-800 pt-4">
+              <span className="text-stone-500 dark:text-stone-400 font-sans">
                 {isSignUp ? 'Already have an account?' : "Don't have an account?"}
               </span>{' '}
               <button
@@ -520,7 +520,7 @@ export const Login = () => {
                   setIsSignUp(!isSignUp);
                   setError('');
                 }}
-                className="font-bold text-beige-600 hover:text-beige-500 hover:underline cursor-pointer font-sans"
+                className="font-bold text-beige-600 dark:text-beige-400 hover:text-beige-500 dark:hover:text-beige-300 hover:underline cursor-pointer font-sans"
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
               </button>
@@ -538,9 +538,9 @@ export const Login = () => {
           {featureCards.map(({ icon: Icon, label }) => (
             <div
               key={label}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 border border-stone-200/60 backdrop-blur-md text-[10px] font-bold text-stone-600"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-stone-800/60 border border-stone-200/60 dark:border-stone-700 backdrop-blur-md text-[10px] font-bold text-stone-600 dark:text-stone-300"
             >
-              <Icon className="h-3 w-3 text-beige-600" />
+              <Icon className="h-3 w-3 text-beige-600 dark:text-beige-400" />
               {label}
             </div>
           ))}

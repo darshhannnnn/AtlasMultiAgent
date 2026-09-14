@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-beige-50: #FDFCFA;
   --color-beige-100: #F5F2EB;
@@ -27,6 +29,11 @@ html, body, #root {
   background-color: #F5F2EB;
   color: #44403c;
   cursor: default;
+}
+
+html.dark, .dark body, .dark #root {
+  background-color: #1c1917;
+  color: #e7e5e4;
 }
 
 input, textarea {

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🛑 Stopping Nass Agent System..."
+echo "🛑 Stopping Atlas Agent System..."
 echo ""
 
 # Kill by PID files if they exist
