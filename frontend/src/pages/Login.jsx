@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cpu, Mail, Lock, Eye, EyeOff, LogIn, Sparkles, Shield, Zap, User } from 'lucide-react';
 import GlassCard from '../components/ui/GlassCard';
 import PulseOrb from '../components/ui/PulseOrb';
+import ParticleText from '../components/ui/ParticleText';
+import ScrollExpand from '../components/ui/ScrollExpand';
+import WebThreads from '../components/ui/WebThreads';
 import { useAppStore } from '../store/useAppStore';
 
 const floatingVariants = {
@@ -67,6 +70,7 @@ export const Login = () => {
   const signup = useAppStore((s) => s.signup);
   
   const [isSignUp, setIsSignUp] = useState(false);
+  const [showLoginForm, setShowLoginForm] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -253,34 +257,117 @@ export const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-beige-100 dark:bg-stone-950 overflow-hidden flex items-center justify-center p-6 font-sans z-10">
+    <div className="login-page-scrollable relative min-h-screen w-full bg-beige-100 dark:bg-stone-950 flex flex-col items-center justify-center p-6 font-sans z-10 gap-6">
       {/* Ambient floating glass panels */}
-      <motion.div
-        custom={0}
-        variants={floatingVariants}
-        animate="animate"
-        className="absolute top-[12%] left-[8%] w-48 h-48 rounded-3xl bg-white/25 dark:bg-stone-800/25 border border-white/50 dark:border-stone-700 backdrop-blur-2xl shadow-[0_20px_60px_rgba(168,152,120,0.08)] hidden lg:block pointer-events-none"
-      />
-      <motion.div
-        custom={1}
-        variants={floatingVariants}
-        animate="animate"
-        className="absolute bottom-[18%] right-[10%] w-56 h-32 rounded-3xl bg-white/35 dark:bg-stone-800/35 border border-white/50 dark:border-stone-700 backdrop-blur-xl shadow-[0_20px_60px_rgba(28,25,23,0.05)] hidden lg:block pointer-events-none"
-      />
-      <motion.div
-        custom={2}
-        variants={floatingVariants}
-        animate="animate"
-        className="absolute top-[22%] right-[18%] w-28 h-28 rounded-full bg-gradient-to-br from-beige-200/30 to-beige-400/10 border border-beige-200/40 dark:border-stone-700 backdrop-blur-md shadow-[0_12px_40px_rgba(168,152,120,0.08)] hidden md:block pointer-events-none"
-      />
-      <motion.div
-        custom={3}
-        variants={floatingVariants}
-        animate="animate"
-        className="absolute bottom-[28%] left-[14%] w-36 h-36 rounded-2xl bg-white/30 dark:bg-stone-800/30 border border-stone-200/40 dark:border-stone-700 backdrop-blur-lg shadow-[0_16px_48px_rgba(28,25,23,0.04)] hidden md:block pointer-events-none"
-      />
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <motion.div
+          custom={0}
+          variants={floatingVariants}
+          animate="animate"
+          className="absolute top-[12%] left-[8%] w-48 h-48 rounded-3xl bg-white/25 dark:bg-stone-800/25 border border-white/50 dark:border-stone-700 backdrop-blur-2xl shadow-[0_20px_60px_rgba(168,152,120,0.08)] hidden lg:block pointer-events-none"
+        />
+        <motion.div
+          custom={1}
+          variants={floatingVariants}
+          animate="animate"
+          className="absolute bottom-[18%] right-[10%] w-56 h-32 rounded-3xl bg-white/35 dark:bg-stone-800/35 border border-white/50 dark:border-stone-700 backdrop-blur-xl shadow-[0_20px_60px_rgba(28,25,23,0.05)] hidden lg:block pointer-events-none"
+        />
+        <motion.div
+          custom={2}
+          variants={floatingVariants}
+          animate="animate"
+          className="absolute top-[22%] right-[18%] w-28 h-28 rounded-full bg-gradient-to-br from-beige-200/30 to-beige-400/10 border border-beige-200/40 dark:border-stone-700 backdrop-blur-md shadow-[0_12px_40px_rgba(168,152,120,0.08)] hidden md:block pointer-events-none"
+        />
+        <motion.div
+          custom={3}
+          variants={floatingVariants}
+          animate="animate"
+          className="absolute bottom-[28%] left-[14%] w-36 h-36 rounded-2xl bg-white/30 dark:bg-stone-800/30 border border-stone-200/40 dark:border-stone-700 backdrop-blur-lg shadow-[0_16px_48px_rgba(28,25,23,0.04)] hidden md:block pointer-events-none"
+        />
+      </div>
 
-      <div className="relative z-10 w-full max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
+      {/* ATLAS Title Header */}
+      <div className="relative w-full max-w-3xl h-20 md:h-24 shrink-0 pointer-events-auto flex items-center justify-center">
+        <ParticleText
+          text="ATLAS"
+          particleSize={2}
+          density={4}
+          color="#a89878"
+          highlightColor="#e8dfd0"
+          scatter={180}
+          gatherDuration={1600}
+          stagger={420}
+          trigger="mount"
+          fontSize="clamp(2.5rem, 9vw, 6rem)"
+          fontWeight={800}
+          glow
+        />
+      </div>
+
+      {/* Full-width Woven Thread Line Divider */}
+      <div className="relative -mx-6 w-[calc(100%+3rem)] h-12 md:h-14 shrink-0 pointer-events-none overflow-hidden [mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,transparent_0%,black_20%,black_80%,transparent_100%)]">
+        <WebThreads
+          color1="#A89878"
+          color2="#8B7D6B"
+          color3="#E8DFD0"
+          speed={0.15}
+          threadCount={6}
+          frequency={4.5}
+          spread={0.22}
+          taper={1.0}
+          position={0.5}
+          fanMode="center"
+          glow={0.03}
+          falloff={0.65}
+          thickness={1.1}
+          brightness={0.7}
+          opacity={0.7}
+          mirror={true}
+          shimmer={true}
+          grain={false}
+          grainIntensity={0.0}
+          mouseInteraction={true}
+          mouseStrength={0.35}
+        />
+      </div>
+
+      <div className="relative z-10 w-full shrink-0">
+        <ScrollExpand
+          mediaType="gradient"
+          gradientColors={['#c4b5a0', '#3a2f22']}
+          titleContent="MULTI-AGENT SYSTEM"
+          scrollHint="Scroll to sign in"
+          scrollDistance={1}
+          holdDistance={0.2}
+          useWindowScroll
+          lockExpanded={showLoginForm}
+        >
+          <h2 className="text-2xl md:text-4xl font-extrabold text-white mb-3">
+            Multi-Agent Orchestration, Simplified
+          </h2>
+          <p className="text-sm md:text-base text-white/80 max-w-xl mb-6 leading-relaxed">
+            Atlas coordinates chat, document intelligence, email triage, and code 
+            generation through a single agent workspace — built for speed, clarity, 
+            and control.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setShowLoginForm(true);
+              setTimeout(() => {
+                const el = document.getElementById('login-form-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }, 50);
+            }}
+            className="px-6 py-3 rounded-xl bg-white text-stone-900 font-semibold text-sm hover:bg-white/90 transition-colors cursor-pointer"
+          >
+            Click here for Login
+          </button>
+        </ScrollExpand>
+      </div>
+
+      {showLoginForm && (
+        <div id="login-form-section" className="relative z-10 w-full max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16">
         {/* Feature cards — desktop side panel */}
         <motion.div
           initial={{ opacity: 0, x: -24, filter: 'blur(8px)' }}
@@ -563,6 +650,7 @@ export const Login = () => {
           ))}
         </motion.div>
       </div>
+      )}
     </div>
   );
 };

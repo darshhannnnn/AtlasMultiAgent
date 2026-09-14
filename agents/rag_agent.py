@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def run_rag_agent(
     query: str,
     top_k: int = 4,
+    source: Optional[str] = None,
     provider: Optional[str] = None,
     model_name: Optional[str] = None,
     api_key: Optional[str] = None,
@@ -36,6 +37,7 @@ def run_rag_agent(
 
         retriever = get_retriever(
             top_k=top_k,
+            source=source,
             provider=provider,
             api_key=api_key
         )

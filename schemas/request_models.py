@@ -26,6 +26,7 @@ class ChunkResponse(BaseModel):
 class RAGQueryRequest(BaseModel):
     query: str = Field(..., description="Query to search in documents")
     top_k: int = Field(default=4, description="Number of chunks to retrieve")
+    source: Optional[str] = Field(default=None, description="Optional document source/filename to scope search")
     session_id: Optional[str] = None
     provider: Optional[str] = None
     model: Optional[str] = None

@@ -21,7 +21,13 @@ from schemas.request_models import (
 )
 from config.settings import settings
 from rag.chunking import process_document
-from rag.vector_store import add_documents, get_retriever
+from rag.vector_store import (
+    add_documents,
+    get_retriever,
+    delete_documents_by_source,
+    list_documents,
+    clear_collection
+)
 from google_auth_oauthlib.flow import Flow
 from memory.memory_manager import handle_message, check_and_save_fact, get_context
 from tools.gmail_tools import fetch_recent_emails, fetch_single_email
@@ -138,9 +144,18 @@ async def upload_document(file: UploadFile = File(...)):
         chunks = await process_document(file)
         if not chunks:
             raise ValueError(f"No readable content could be extracted from '{file.filename}'.")
+        
+        # Deduplication: remove existing chunks for this filename before re-ingesting
+        deleted_count = delete_documents_by_source(file.filename)
         add_documents(chunks)
+        
+        msg = (
+            f"Document updated successfully ({deleted_count} previous chunks replaced)"
+            if deleted_count > 0 else
+            "Document uploaded successfully"
+        )
         return UploadResponse(
-            message="Document uploaded successfully",
+            message=msg,
             filename=file.filename,
             chunks_stored=len(chunks)
         )
@@ -150,12 +165,35 @@ async def upload_document(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=friendly)
 
 
+@router.get("/rag/documents")
+def get_rag_documents(provider: Optional[str] = None, api_key: Optional[str] = None):
+    try:
+        docs = list_documents(provider=provider, api_key=api_key)
+        return {"documents": docs, "count": len(docs)}
+    except Exception as e:
+        friendly = format_friendly_error(e)
+        logger.error(f"Error in get_rag_documents: {friendly}", exc_info=True)
+        raise HTTPException(status_code=400, detail=friendly)
+
+
+@router.delete("/rag/documents")
+def clear_rag_documents(provider: Optional[str] = None, api_key: Optional[str] = None):
+    try:
+        success = clear_collection(provider=provider, api_key=api_key)
+        return {"message": "Knowledge base cleared successfully", "success": success}
+    except Exception as e:
+        friendly = format_friendly_error(e)
+        logger.error(f"Error in clear_rag_documents: {friendly}", exc_info=True)
+        raise HTTPException(status_code=400, detail=friendly)
+
+
 @router.post("/rag/query", response_model=RAGQueryResponse)
 async def rag_query(request: RAGQueryRequest):
     try:
-        # Retrieve chunks for reference
+        # Retrieve chunks for reference (scoped to source if specified)
         retriever = get_retriever(
             top_k=request.top_k,
+            source=request.source,
             provider=request.provider,
             api_key=request.api_key
         )
@@ -176,6 +214,7 @@ async def rag_query(request: RAGQueryRequest):
         answer = run_rag_agent(
             query=request.query,
             top_k=request.top_k,
+            source=request.source,
             provider=request.provider,
             model_name=request.model,
             api_key=request.api_key
