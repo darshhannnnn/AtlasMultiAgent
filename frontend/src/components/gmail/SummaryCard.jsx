@@ -77,13 +77,13 @@ export const SummaryCard = ({ email, summary, onSummarize, isLoading }) => {
 
       {/* AI Summary digest block */}
       {(summary || isLoading) && (
-        <GlassCard className="p-4! border-stone-200/50 dark:border-stone-700 flex-1 flex flex-col bg-white/80 dark:bg-stone-900/80">
+        <GlassCard className="p-4! border-stone-200/50 dark:border-stone-700 flex-1 min-h-0 flex flex-col bg-white/80 dark:bg-stone-900/80">
           <div className="flex items-center gap-2 mb-3 border-b border-stone-100 dark:border-stone-800 pb-2 text-beige-600 dark:text-beige-400 font-mono text-[10px] font-bold tracking-wider uppercase">
             <BookOpen className="h-3.5 w-3.5 text-beige-600 dark:text-beige-400" />
             <span>AI Email Digest</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-sans select-text">
+          <div className="flex-1 min-h-0 overflow-y-auto text-xs text-stone-700 dark:text-stone-300 leading-relaxed font-sans select-text">
             {isLoading ? (
               <div className="flex items-center gap-2 text-stone-400 dark:text-stone-500 italic p-2">
                 <Sparkles className="h-3.5 w-3.5 animate-spin text-beige-600 dark:text-beige-400" />
