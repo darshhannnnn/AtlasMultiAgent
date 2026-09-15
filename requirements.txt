@@ -25,6 +25,7 @@ unstructured==0.22.32
 
 # Memory / Caching
 redis==5.1.0
+psycopg2-binary==2.9.9
 
 # Gmail
 google-api-python-client==2.149.0

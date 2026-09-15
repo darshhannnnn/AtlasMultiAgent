@@ -93,7 +93,6 @@ export const Login = () => {
   const [googleClientSecret, setGoogleClientSecret] = useState(
     localStorage.getItem('atlas_google_client_secret') || import.meta.env.VITE_GOOGLE_CLIENT_SECRET || ''
   );
-  const [showConfig, setShowConfig] = useState(false);
   const cardGlowRef = useRef(null);
 
   const handleCardMouseMove = (e) => {
@@ -628,49 +627,6 @@ export const Login = () => {
                 <Sparkles className="h-4 w-4" />
                 <span>Continue as Guest</span>
               </button>
-
-              {/* Configurable client_id credentials options */}
-              <div className="flex flex-col items-center mt-2 w-full select-none">
-                <button
-                  type="button"
-                  onClick={() => setShowConfig(!showConfig)}
-                  className="text-[9px] text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 font-bold uppercase tracking-wider font-mono hover:underline cursor-pointer"
-                >
-                  {showConfig ? 'Hide Client ID Setup' : 'Configure Google Client ID'}
-                </button>
-                
-                {showConfig && (
-                  <div className="mt-2 p-3 bg-stone-50 dark:bg-stone-800/70 border border-stone-200/80 dark:border-stone-700 rounded-xl w-full flex flex-col gap-2 text-left">
-                    <p className="text-[9.5px] text-stone-500 dark:text-stone-400 leading-normal font-sans">
-                      Create a <b>Web application</b> Client ID in GCP Console, then add <code>{window.location.origin}</code> under:
-                    </p>
-                    <ul className="list-disc list-inside text-[9px] text-stone-500 dark:text-stone-400 font-mono pl-1">
-                      <li>Authorized JavaScript origins</li>
-                      <li>Authorized redirect URIs</li>
-                    </ul>
-                    <input
-                      type="text"
-                      value={googleClientId}
-                      onChange={(e) => {
-                        setGoogleClientId(e.target.value);
-                        localStorage.setItem('atlas_google_client_id', e.target.value.trim());
-                      }}
-                      placeholder="Paste your Web client ID..."
-                      className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono text-ellipsis"
-                    />
-                    <input
-                      type="password"
-                      value={googleClientSecret}
-                      onChange={(e) => {
-                        setGoogleClientSecret(e.target.value);
-                        localStorage.setItem('atlas_google_client_secret', e.target.value.trim());
-                      }}
-                      placeholder="Paste your Client Secret..."
-                      className="w-full bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-200 text-[10px] rounded-lg px-2.5 py-1 focus:outline-none focus:border-beige-400 dark:focus:border-stone-500 font-mono text-ellipsis"
-                    />
-                  </div>
-                )}
-              </div>
             </form>
 
             <div className="mt-6 text-center text-xs select-none border-t border-stone-100 dark:border-stone-800 pt-4">
