@@ -353,7 +353,7 @@ export const GmailPanel = () => {
       </div>
 
       {/* Right Column: Digest Summary Sidebar */}
-      <div className="w-full md:w-[380px] shrink-0 h-full overflow-hidden flex flex-col">
+      <div className="w-full md:w-[380px] shrink-0 h-full min-h-0 overflow-hidden flex flex-col">
         <SummaryCard 
           email={activeEmail}
           summary={summary}
