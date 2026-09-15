@@ -41,11 +41,11 @@
 
 ## 🎯 Current Application Status
 
-### ✅ Backend Server (http://localhost:8000)
+### ✅ Backend Server (https://atlasmultiagentsystem.onrender.com)
 - **Status:** Running smoothly
 - **PostgreSQL:** Not required (optional)
 - **All APIs:** Working
-- **API Docs:** http://localhost:8000/docs
+- **API Docs:** https://atlasmultiagentsystem.onrender.com/docs
 
 ### ✅ Frontend Server (http://localhost:5173)
 - **Status:** Running smoothly

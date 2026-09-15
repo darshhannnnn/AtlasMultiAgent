@@ -134,7 +134,7 @@ export const ChatPanel = () => {
         const timeoutId = setTimeout(() => controller.abort(), 45000);
 
         try {
-          const response = await fetch('http://localhost:8000/api/v1/chat', {
+          const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal: controller.signal,

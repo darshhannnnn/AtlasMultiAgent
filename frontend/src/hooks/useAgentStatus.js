@@ -7,7 +7,7 @@ export const useAgentStatus = (pollingInterval = 3000) => {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/agents/status');
+        const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/agents/status');
         if (response.ok) {
           const data = await response.json();
           setAgentStates(data);

@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     SCOPES: str = "https://www.googleapis.com/auth/gmail.readonly"
     GMAIL_WEB_CLIENT_ID: str = ""
     GMAIL_WEB_CLIENT_SECRET: str = ""
-    GMAIL_REDIRECT_URI: str = "http://localhost:8000/api/v1/gmail/callback"
+    GMAIL_REDIRECT_URI: str = "https://atlasmultiagentsystem.onrender.com/api/v1/gmail/callback"
 
     # Auth / JWT
     JWT_SECRET_KEY: str = ""

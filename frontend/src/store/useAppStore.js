@@ -61,7 +61,7 @@ export const useAppStore = create((set, get) => ({
   // Auth
   login: async (email, password, remember = true) => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+      const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), password })
@@ -83,7 +83,7 @@ export const useAppStore = create((set, get) => ({
 
   signup: async (name, email, password) => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/signup', {
+      const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), password })
@@ -103,7 +103,7 @@ export const useAppStore = create((set, get) => ({
 
   loginWithGoogle: async (googleUser) => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/auth/google', {
+      const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/auth/google', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -150,7 +150,7 @@ export const useAppStore = create((set, get) => ({
   backendConfig: null,
   fetchBackendConfig: async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/config/llm');
+      const response = await fetch('https://atlasmultiagentsystem.onrender.com/api/v1/config/llm');
       if (response.ok) {
         const data = await response.json();
         set({ backendConfig: data });

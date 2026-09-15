@@ -67,7 +67,7 @@ export const DocumentUpload = ({ onUploadSuccess }) => {
     formData.append("file", file);
 
     try {
-      const response = await fetch("http://localhost:8000/api/v1/rag/ingest", {
+      const response = await fetch("https://atlasmultiagentsystem.onrender.com/api/v1/rag/ingest", {
         method: "POST",
         body: formData,
       });

@@ -87,7 +87,7 @@ tail -f frontend.log  # Frontend logs
 ## 📚 More Information
 
 - **Full Documentation:** See other README files in this folder
-- **API Documentation:** http://localhost:8000/docs (when running)
+- **API Documentation:** https://atlasmultiagentsystem.onrender.com/docs (when running)
 - **PostgreSQL Setup:** See `POSTGRESQL_SETUP.md` (optional)
 - **Detailed Commands:** See `SIMPLE_COMMANDS.md`
 
