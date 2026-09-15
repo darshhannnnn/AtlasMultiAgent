@@ -305,10 +305,10 @@ export const GmailPanel = () => {
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 h-full overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 h-full min-h-0 overflow-hidden">
       
       {/* Left Column: Email Rows list */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <GlassCard className="h-full p-5! flex flex-col rounded-2xl">
           <div className="flex items-center justify-between mb-4 shrink-0">
             <div className="flex items-center gap-2 text-xs font-bold text-stone-500 dark:text-stone-400 tracking-wider uppercase font-mono">
