@@ -20,23 +20,23 @@ export const Dashboard = () => {
   useAgentStatus(3000);
 
   return (
-    <div className="flex h-screen w-screen bg-[#F5F2EB] dark:bg-stone-950 text-stone-900 dark:text-stone-100 overflow-hidden font-sans">
+    <div className="flex h-screen w-screen bg-[#F5F2EB] dark:bg-stone-950 text-stone-900 dark:text-stone-100 min-h-0 overflow-hidden font-sans">
       {/* Sidebar navigation */}
       <Sidebar />
 
       {/* Main Column */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden">
         {/* Topbar credentials & tools selector */}
         <Topbar showTopology={showTopology} setShowTopology={setShowTopology} />
 
         {/* Dashboard Grid workspace */}
-        <div className="flex-1 flex h-full overflow-hidden">
+        <div className="flex-1 flex h-full min-h-0 overflow-hidden">
           {showTopology ? (
-            <div className="flex-grow h-full overflow-hidden z-10 flex flex-col">
+            <div className="flex-grow h-full min-h-0 overflow-hidden z-10 flex flex-col">
               <AgentTopologyCanvas onClose={() => setShowTopology(false)} />
             </div>
           ) : (
-            <main className="flex-1 flex flex-col h-full overflow-hidden bg-transparent z-10 relative">
+            <main className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-transparent z-10 relative">
               <SectionWrapper isActive={activeSection === 'chat'}>
                 <ChatPanel />
               </SectionWrapper>
