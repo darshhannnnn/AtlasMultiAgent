@@ -5,7 +5,6 @@ import { Cpu, Mail, Lock, Eye, EyeOff, LogIn, Sparkles, Shield, Zap, User } from
 import GlassCard from '../components/ui/GlassCard';
 import PulseOrb from '../components/ui/PulseOrb';
 import ParticleText from '../components/ui/ParticleText';
-import ScrollExpand from '../components/ui/ScrollExpand';
 import WebThreads from '../components/ui/WebThreads';
 import { useAppStore } from '../store/useAppStore';
 
@@ -354,39 +353,7 @@ export const Login = () => {
       </div>
 
       <div className="relative z-10 w-full shrink-0">
-        <ScrollExpand
-          mediaType="gradient"
-          gradientColors={['#c4b5a0', '#3a2f22']}
-          titleContent="MULTI-AGENT SYSTEM"
-          scrollHint="Scroll to sign in"
-          scrollDistance={1}
-          holdDistance={0.2}
-          useWindowScroll
-          lockExpanded={showLoginForm}
-          onMouseMove={handleCardMouseMove}
-          onMouseLeave={handleCardMouseLeave}
-        >
-          {/* Subtle dot-grid texture layered behind text content with idle ambient pulse */}
-          <div 
-            className="absolute inset-0 pointer-events-none z-0 scroll-expand__dot-grid-animated"
-            style={{
-              backgroundImage: 'radial-gradient(rgba(232, 223, 208, 0.3) 1.2px, transparent 1.2px)',
-              backgroundSize: '24px 24px',
-              backgroundPosition: 'center',
-              maskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0.5) 80%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0.5) 80%, transparent 100%)',
-            }}
-          />
-
-          {/* Mouse-following radial glow spotlight */}
-          <div 
-            ref={cardGlowRef}
-            className="absolute inset-0 pointer-events-none opacity-0 transition-opacity duration-300 z-[1]"
-            style={{
-              background: 'radial-gradient(circle 320px at var(--x, 50%) var(--y, 50%), rgba(232, 223, 208, 0.28) 0%, rgba(210, 195, 175, 0.12) 40%, transparent 70%)',
-            }}
-          />
-
+        <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center pt-4 pb-2 px-6">
           <h2 className="relative z-10 text-2xl md:text-4xl font-extrabold text-white mb-3">
             Multi-Agent Orchestration, Simplified
           </h2>
@@ -407,7 +374,21 @@ export const Login = () => {
               </span>
             ))}
           </div>
+        </div>
 
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-6 mb-8">
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="relative z-10 w-full rounded-2xl shadow-2xl"
+          >
+            <source src="/brag.mp4" type="video/mp4" />
+          </video>
+        </div>
+
+        <div className="relative z-10 w-full flex items-center justify-center pb-8">
           <button
             type="button"
             onClick={() => {
@@ -421,7 +402,7 @@ export const Login = () => {
           >
             Click here for Login
           </button>
-        </ScrollExpand>
+        </div>
       </div>
 
       {showLoginForm && (

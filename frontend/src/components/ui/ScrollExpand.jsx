@@ -84,6 +84,21 @@ const ScrollExpand = ({
 
     media.style.transform = `scale(${c.mediaZoom + (1 - c.mediaZoom) * e})`;
 
+    if (mediaType === 'video' && media.play && media.pause) {
+      const videoReveal = smoothstep(0.93, 0.99, p);
+      media.style.opacity = `${videoReveal}`;
+
+      if (p >= 0.97) {
+        if (media.paused) {
+          media.play().catch(() => {});
+        }
+      } else {
+        if (!media.paused) {
+          media.pause();
+        }
+      }
+    }
+
     if (scrimRef.current) scrimRef.current.style.opacity = `${c.overlayScrim * e}`;
 
     if (titleRef.current) {
@@ -225,7 +240,6 @@ const ScrollExpand = ({
         className="scroll-expand__media"
         src={src}
         poster={poster}
-        autoPlay
         muted
         loop
         playsInline
