@@ -354,10 +354,10 @@ export const Login = () => {
 
       <div className="relative z-10 w-full shrink-0">
         <div className="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center text-center pt-4 pb-2 px-6">
-          <h2 className="relative z-10 text-2xl md:text-4xl font-extrabold text-white mb-3">
+          <h2 className="relative z-10 text-2xl md:text-4xl font-extrabold text-stone-900 dark:text-white mb-3">
             Multi-Agent Orchestration, Simplified
           </h2>
-          <p className="relative z-10 text-sm md:text-base text-white/80 max-w-xl mb-5 leading-relaxed">
+          <p className="relative z-10 text-sm md:text-base text-stone-600 dark:text-white/80 max-w-xl mb-5 leading-relaxed">
             Atlas coordinates chat, document intelligence, email triage, and code 
             generation through a single agent workspace — built for speed, clarity, 
             and control.
@@ -368,7 +368,7 @@ export const Login = () => {
             {featureChips.map((chip) => (
               <span
                 key={chip}
-                className="px-3 py-1 rounded-full bg-white/10 hover:bg-white/[0.18] border border-white/20 hover:border-white/45 text-white/90 hover:text-white text-xs font-medium tracking-wide shadow-sm hover:shadow-[0_0_12px_rgba(232,223,208,0.35)] transition-all duration-200 ease-out select-none cursor-default"
+                className="px-3 py-1 rounded-full bg-stone-900/5 hover:bg-stone-900/10 dark:bg-white/10 dark:hover:bg-white/[0.18] border border-stone-900/15 hover:border-stone-900/30 dark:border-white/20 dark:hover:border-white/45 text-stone-700 hover:text-stone-900 dark:text-white/90 dark:hover:text-white text-xs font-medium tracking-wide shadow-sm hover:shadow-[0_0_12px_rgba(232,223,208,0.35)] transition-all duration-200 ease-out select-none cursor-default"
               >
                 {chip}
               </span>
